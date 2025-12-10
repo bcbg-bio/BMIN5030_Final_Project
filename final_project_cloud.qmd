@@ -1,0 +1,577 @@
+---
+title: "Predicting Pancreatic Cancer Aggressiveness"
+subtitle: "BMIN5030 Final Project"
+author: "Cameron Cloud"
+format: html
+editor: visual
+number-sections: true
+embed-resources: true
+---
+
+------------------------------------------------------------------------
+
+## Overview {#sec-overview}
+
+This project uses clinical and exposure data from The Cancer Genome Atlas (TCGA-PAAD) to investigate whether non-invasive clinical factors can predict pancreatic tumor aggressiveness. First, I assess relationships between available clinical variables and patient outcomes, confirming that tumor grade is significantly associated with survival time and can serve as a proxy for tumor aggressiveness. I then build predictive models—including logistic regression and random forest classifiers—to determine whether tumor grade can be predicted from non-invasive baseline features such as age, sex, and tumor location. Finally, I incorporate additional exposure variables (e.g., smoking history) to evaluate whether lifestyle factors improve prediction accuracy.
+
+**Main Goal: Determine whether routinely collected, non-invasive clinical factors can predict pancreatic tumor aggressiveness at diagnosis and evaluate whether tumor grade—used as a proxy for aggressiveness—can be predicted from baseline demographic/anatomical/exposure variables**
+
+Two faculty: Dr. Zhou and Dr. Lee (CHOP Pathology Dept and CHOP Center for Computational Genomics), I have learned from Dr. Zhou about cancer biology, and with Dr. Lee's help, I have been able to focus on certain clinical factors would be most important to use (for clinical convenience and without being redundant) of and what models to make (including how to run a cox model).
+
+[GITHUB LINK](https://github.com/cloudc1/BMIN5030_Final_Project)
+
+## Introduction {#sec-introduction}
+
+The main problem: Pancreatic cancer an aggressive disease, with a five-year survival rate of 44% for local disease, and a 3% for distant disease ([source](https://www.cancer.org/cancer/types/pancreatic-cancer/detection-diagnosis-staging/survival-rates.html)). Exploring whether simple clinical features could aid early risk stratification when more invasive or molecular assays are not available. By building logistic and linear regression models, I hope to identify characteristics that may influence disease aggressiveness. Assessing the predictive value of non-invasive data is important for informing prognosis and potentially supporting clinical decision-making in pancreatic cancer.
+
+This problem is interdisciplinary, consisting of biology/oncology, statistics, and data science. Biology can provide the understanding tumor behavior and treatment effects. Statistics and data science enable interpretation and analysis of large clinical datasets like TCGA. By combining perspectives, this project contributes to a greater understanding of pancreatic cancer prognosis and potential paths toward improving patient outcomes.
+
+## Methods {#sec-methods}
+
+Packages needed:
+
+```{r}
+library(tidyverse)
+library(tidymodels)
+library(broom)
+library(modelsummary)
+library(ggplot2)
+library(randomForest)
+library(caret)
+library(pROC)
+library(patchwork)
+```
+
+### Loading and cleaning main sources of data
+
+```{r}
+#main clinical data
+data <- read_tsv("clinical.project-tcga-paad.2025-10-01/clinical.tsv")
+dim(data)
+#[1] 1082  210
+
+# NOTE: '-- essentially means NA, so converting all those to NA
+data[data == "'--"] <- NA
+
+# Get the number of NAs per column
+na_counts <- colSums(is.na(data))
+#na_counts
+
+#Columns I can focus on -- based on having sufficient data (will get rid of cols if 1000+ NA values)
+data <- data[, na_counts < 1000]
+#also only interested in patients with primary diagnosis
+data <- data |> filter(diagnoses.classification_of_tumor=="primary")
+#patients are repeated if they have multiple treatments
+data_new <- data |> distinct(cases.case_id, .keep_all = TRUE)
+dim(data_new) # 185 patients
+
+### Other data I found and decided to do some analyses with to try to imporve predictions
+exposure <- read_tsv("clinical.project-tcga-paad.2025-10-01/exposure.tsv")
+exposure[exposure == "'--"] <- NA
+na_counts <- colSums(is.na(exposure))
+exposure <- exposure[, na_counts < nrow(exposure)/2]
+```
+
+### **Part I. Linear Regression to identify a clinical variable representing aggressiveness (tumor grade associated with days to death)**
+
+```{r}
+# Recoding grade into high and low; limitation is G2 is really an "intermediate" grade, but put with groujp 1
+data_new$grade_new <- NA
+data_new$grade_new[data_new$diagnoses.tumor_grade %in% c("G1", "G2")] <- "Low"
+data_new$grade_new[data_new$diagnoses.tumor_grade %in% c("G3", "G4")] <- "High"
+
+### With help from Dr. Lee !!!
+library(survival)
+
+# Needed to account for the patients where there is no days to death. Was told it was risky to impute data for the missing patients because it would introduce bias
+data_new$time <- ifelse(
+  !is.na(data_new$demographic.days_to_death),
+  data_new$demographic.days_to_death,       # event occurred
+  data_new$diagnoses.days_to_last_follow_up # censored
+)
+data_new$event <- ifelse(
+  data_new$demographic.vital_status == "Dead",
+  1,   # death
+  0    # censored/alive
+)
+
+surv_obj <- Surv(time = as.numeric(data_new$time), event = data_new$event)
+cox_model <- coxph(surv_obj ~ grade_new, data = data_new)
+summary(cox_model)
+sf <- survfit(cox_model, newdata = data.frame(grade_new = c("High", "Low")))
+summary(sf)$table
+
+ggplot(
+  data_new |> filter(!is.na(grade_new)),   # remove NA grade
+  aes(x = grade_new, y = as.numeric(time))
+) +
+  geom_violin(fill = "#84d2f6", color = "#0077b6", na.rm = TRUE) +
+  geom_boxplot(width = 0.1, fill = "#59a5d8", color = "#0077b6", na.rm = TRUE) +
+  theme_bw() +
+  labs(
+    x = "Tumor Grade",       # x-axis label
+    y = "Survival Time (days)" # y-axis label
+  )
+
+# data for modelling
+model_data <- data_new[!is.na(data_new$grade_new), ] # removed 3 cases
+model_data$grade_new <- factor(model_data$grade_new, levels = c("Low", "High"))
+```
+
+High-grade tumors were associated with significantly fewer days to death. Low-grade tumors have a 36% lower hazard of death. Based on survival curve estimates, median survival for low-grade tumors was 661 days compared to 511 for high grade tumors.
+
+### Part II: Further exploration of clinical data, followed by univariate logistic regression models to predict tumor grade
+
+Creating/cleaning more for the main data frame for the models
+
+```{r}
+# Recode grade: OUTCOME
+model_data$grade_binary <- NA
+model_data$grade_binary[model_data$diagnoses.tumor_grade %in% c("G1", "G2")] <- 0
+model_data$grade_binary[model_data$diagnoses.tumor_grade %in% c("G3", "G4")] <- 1
+model_data$grade_binary <- as.factor(model_data$grade_binary)
+
+# Recode other things: PREDICTORSS
+model_data$origin_group <- model_data$diagnoses.tissue_or_organ_of_origin
+model_data$origin_group[model_data$origin_group %in% 
+                        c("Overlapping lesion of pancreas")] <- "Other"
+model_data$origin_group <- droplevels(factor(model_data$origin_group))
+
+#make age numeric and by year
+model_data$age_years <- as.numeric(as.character(model_data$diagnoses.age_at_diagnosis)) / 365.25
+```
+
+Quick tables/plots for study cohort for some context:
+
+```{r}
+# Age
+ggplot(model_data %>% filter(!is.na(age_years)), 
+       aes(x = age_years, fill = grade_binary)) +
+  geom_histogram(binwidth = 5, position = "stack", color = "blue") +
+  labs(x = "Age at Diagnosis", y = "Count", fill = "Tumor Grade") +
+  theme_minimal()
+
+# Gender
+ggplot(model_data, aes(x = demographic.gender, fill = grade_binary)) +
+  geom_bar(position = "stack") +
+  labs(x = "Gender", y = "Count", fill = "Tumor Grade") +
+  theme_minimal()
+
+# Race
+ggplot(model_data, aes(x = demographic.race, fill = grade_binary)) +
+  geom_bar(position = "stack") +
+  labs(x = "Race", y = "Count", fill = "Tumor Grade") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+model_data$demographic.race <- as.factor(model_data$demographic.race)
+model_data$demographic.race <- relevel(model_data$demographic.race, ref = "white")
+
+# Tumor origin
+ggplot(model_data, aes(x = origin_group, fill = grade_binary)) +
+  geom_bar(position = "stack") +
+  labs(x = "Tumor Origin", y = "Count", fill = "Tumor Grade") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+model_data$origin_group <- as.factor(model_data$origin_group)
+model_data$origin_group <- relevel(model_data$origin_group, ref = "Head of pancreas")
+
+# Prior malignancy
+ggplot(model_data, aes(x = diagnoses.prior_malignancy, fill = grade_binary)) +
+  geom_bar(position = "stack") +
+  labs(x = "Prior malignancy", y = "Count", fill = "Tumor Grade") +
+  theme_minimal()
+```
+
+Fitting various univaritiate regression models (identifying candidate predictors). Trying to avoid over-fitting/redundancy/unexpected patterns:
+
+```{r}
+model_age <- glm(grade_binary ~ age_years,
+                 data = model_data, family = binomial)
+summary(model_age)
+
+model_gender <- glm(grade_binary ~ demographic.gender,
+                    data = model_data, family = binomial)
+summary(model_gender)
+
+model_race <- glm(grade_binary ~ demographic.race,
+                    data = model_data, family = binomial)
+summary(model_race)
+
+model_origin <- glm(grade_binary ~ origin_group,
+                    data = model_data, family = binomial)
+summary(model_origin)
+
+model_sick <- glm(grade_binary ~ diagnoses.prior_malignancy,
+                    data = model_data, family = binomial)
+summary(model_sick)
+```
+
+### Part III: Multivariate Logistic Regression for odds ratios (see @sec-results for output)
+
+```{r}
+model_multi <- glm(
+  grade_binary ~ age_years +
+          demographic.gender +
+    demographic.race +
+      origin_group +
+    diagnoses.prior_malignancy,
+  data = model_data,
+  family = binomial
+)
+```
+
+### **Part IV. Building both multivariate logistic regression and random forest models to predict tumor grade** (see @sec-results for output)
+
+```{r}
+categorical_vars <- c("demographic.gender", "demographic.race",
+                      "origin_group", "diagnoses.prior_malignancy")
+
+model_data <- model_data %>%
+  mutate(grade_binary = factor(grade_binary, levels = c("0", "1")))
+
+rf_data <- model_data %>%
+  dplyr::select(grade_binary, age_years, all_of(categorical_vars)) %>%
+  mutate(across(all_of(categorical_vars), ~fct_explicit_na(as.factor(.), na_level = "Unknown"))) %>%
+  na.omit()  # remove any remaining NAs in numeric variables
+
+#have to clean because failed bc of some NAs
+rf_data$grade_binary <- as.factor(rf_data$grade_binary)
+
+# spitting to train and test
+set.seed(1234)
+rf_data$grade_binary <- as.factor(rf_data$grade_binary)
+data_split <- initial_split(rf_data, 
+                            strata = grade_binary, 
+                            prop = 0.70)
+
+data_train <- training(data_split)
+data_test <- testing(data_split)
+
+######Logistic regression
+lr_cls_spec <- 
+  logistic_reg() |> 
+  set_engine("glm")
+
+#Perform 10-fold cross validation on the training data
+set.seed(1234)
+data_folds <- vfold_cv(data_train, v = 10)
+
+glm_wf <- workflow() |>
+  add_model(lr_cls_spec) |>
+  add_formula(grade_binary ~ .)
+  
+#Use workflow to fit model with each fold of resampled data
+glm_fit_cv <- 
+  glm_wf |>
+  fit_resamples(data_folds, control = control_resamples(save_pred = TRUE))
+
+#Collect predictions out of folds into one tibble
+data_glm_cv_preds <- collect_predictions(glm_fit_cv)
+
+#Plot of ROC curve of CV results
+plot1 <- autoplot(roc_curve(data_glm_cv_preds, 
+        grade_binary, 
+        .pred_1 ))
+
+collect_metrics(glm_fit_cv)
+
+lr_cls_fit <- 
+  lr_cls_spec |>
+  fit(as.factor(grade_binary) ~ ., data = data_train)
+
+#Prediction on the test data
+data.lr.pred.values.test <-  bind_cols(
+  truth = data_test$grade_binary,
+  predict(lr_cls_fit, data_test),
+  predict(lr_cls_fit, data_test, type = "prob")
+)
+
+#Plot of ROC curve of prediction on test results
+plot2 <- autoplot(roc_curve(data.lr.pred.values.test, 
+                   truth, 
+                   .pred_1))
+metrics(data.lr.pred.values.test, truth, .pred_class, .pred_1)
+
+######Random Forest training then testing
+rf_spec <- rand_forest(
+  mtry = 3,
+  trees = 250,
+  min_n = 5
+) %>%
+  set_engine("randomForest", importance = TRUE) %>%
+  set_mode("classification")
+
+rf_workflow <-
+  workflow() |>
+  add_model(rf_spec) |>
+  add_formula(grade_binary ~ .)
+
+set.seed(1234)
+rf_fit_cv <-
+  rf_workflow |>
+  fit_resamples(data_folds, 
+                control = control_resamples(save_pred = TRUE))
+
+collect_metrics(rf_fit_cv)
+
+plot3 <- rf_fit_cv |>
+  collect_predictions() |>
+  roc_curve(grade_binary, .pred_1) |>
+  autoplot()
+
+factor_cols <- c("demographic.gender", "demographic.race",
+                 "origin_group", "diagnoses.prior_malignancy")
+
+rf_fit_new <- rf_spec |>
+  fit(as.factor(grade_binary) ~ ., data = data_train)
+
+rf_test_preds <- bind_cols(
+  truth = data_test$grade_binary,
+  predict(rf_fit_new, data_test),
+  predict(rf_fit_new, data_test, type = "prob")
+)
+
+# ROC curve on test data
+plot4 <- autoplot(
+  roc_curve(rf_test_preds, truth, .pred_1)
+)
+
+metrics(rf_test_preds, truth, .pred_class, .pred_1)
+```
+
+### Part V: Model with tobacco exposure to see if we get improved predictions
+
+Some cleaning
+
+```{r}
+# need to redefine the smoking groups because some are small. will change NA to unknown
+exposure$smoking_group <- dplyr::case_when(
+  exposure$exposures.tobacco_smoking_status == "Lifelong Non-Smoker" ~ "Never",
+  exposure$exposures.tobacco_smoking_status %in% c(
+       "Current Reformed Smoker for < or = 15 yrs",
+       "Current Reformed Smoker for > 15 yrs",
+       "Current Reformed Smoker, Duration Not Specified"
+   ) ~ "Former",
+  exposure$exposures.tobacco_smoking_status == "Current Smoker" ~ "Current",
+  TRUE ~ "Unknown"
+)
+
+exposure_unique <- exposure %>% 
+  select(cases.case_id, smoking_group) %>%
+  distinct(cases.case_id, .keep_all = TRUE)
+
+model_data2 <- model_data %>% 
+  left_join(exposure_unique, by = "cases.case_id")
+
+model_data2$smoking_group <- as.factor(model_data2$smoking_group)
+model_data2$smoking_group <- relevel(model_data2$smoking_group, ref = "Never")
+
+
+#univariate model
+model_smoke <- glm(grade_binary ~ smoking_group,
+                 data = model_data2, family = binomial)
+summary(model_smoke)
+```
+
+Adding into multivariate model
+
+```{r}
+model_multi_smoke <- glm(
+  grade_binary ~ age_years +
+          demographic.gender +
+    demographic.race +
+      origin_group +
+    diagnoses.prior_malignancy +
+    smoking_group,
+  data = model_data2,
+  family = binomial
+)
+
+```
+
+Re-running the logistic and random forest prediction models
+
+```{r}
+categorical_vars <- c("demographic.gender", "demographic.race",
+                      "origin_group", "diagnoses.prior_malignancy","smoking_group")
+
+model_data2 <- model_data2 %>%
+  mutate(grade_binary = factor(grade_binary, levels = c("0", "1")))
+
+rf_data_smoke <- model_data2 %>%
+  dplyr::select(grade_binary, age_years, all_of(categorical_vars)) %>%
+  mutate(across(all_of(categorical_vars), ~fct_explicit_na(as.factor(.), na_level = "Unknown"))) %>%
+  na.omit()  # remove any remaining NAs in numeric variables
+
+#have to clean because failed bc of some NAs
+rf_data_smoke$grade_binary <- as.factor(rf_data_smoke$grade_binary)
+
+set.seed(1234)
+rf_data_smoke$grade_binary <- as.factor(rf_data_smoke$grade_binary)
+data_split <- initial_split(rf_data_smoke, 
+                            strata = grade_binary, 
+                            prop = 0.70)
+
+data_train <- training(data_split)
+data_test <- testing(data_split)
+
+
+######Logistic regression: might not be the best model for this data with this small sample size
+lr_cls_spec <- 
+  logistic_reg() |> 
+  set_engine("glm")
+
+#Perform 10-fold cross validation on the training data
+set.seed(1234)
+data_folds <- vfold_cv(data_train, v = 10)
+
+glm_wf <- workflow() |>
+  add_model(lr_cls_spec) |>
+  add_formula(grade_binary ~ .)
+  
+#Use workflow to fit model with each fold of resampled data
+glm_fit_cv <- 
+  glm_wf |>
+  fit_resamples(data_folds, control = control_resamples(save_pred = TRUE))
+
+#Collect predictions out of folds into one tibble
+data_glm_cv_preds <- collect_predictions(glm_fit_cv)
+
+#Plot of ROC curve of CV results
+plot1_smoke <- autoplot(roc_curve(data_glm_cv_preds, 
+        grade_binary, 
+        .pred_1 ))
+
+collect_metrics(glm_fit_cv)
+
+lr_cls_fit <- 
+  lr_cls_spec |>
+  fit(as.factor(grade_binary) ~ ., data = data_train)
+
+#Prediction on the test data
+data.lr.pred.values.test <-  bind_cols(
+  truth = data_test$grade_binary,
+  predict(lr_cls_fit, data_test),
+  predict(lr_cls_fit, data_test, type = "prob")
+)
+
+#Plot of ROC curve of prediction on test results
+plot2_smoke <- autoplot(roc_curve(data.lr.pred.values.test, 
+                   truth, 
+                   .pred_1))
+metrics(data.lr.pred.values.test, truth, .pred_class, .pred_1)
+
+######Random Forest training then testing
+rf_spec <- rand_forest(
+  mtry = 3,
+  trees = 250,
+  min_n = 5
+) %>%
+  set_engine("randomForest", importance = TRUE) %>%
+  set_mode("classification")
+
+rf_workflow <-
+  workflow() |>
+  add_model(rf_spec) |>
+  add_formula(grade_binary ~ .)
+
+set.seed(1234)
+rf_fit_cv <-
+  rf_workflow |>
+  fit_resamples(data_folds, 
+                control = control_resamples(save_pred = TRUE))
+
+collect_metrics(rf_fit_cv)
+
+plot3_smoke <- rf_fit_cv |>
+  collect_predictions() |>
+  roc_curve(grade_binary, .pred_1) |>
+  autoplot()
+
+rf_fit_new <- rf_spec |>
+  fit(as.factor(grade_binary) ~ ., data = data_train)
+factor_cols <- c("demographic.gender", "demographic.race",
+                 "origin_group", "diagnoses.prior_malignancy")
+
+
+rf_test_preds <- bind_cols(
+  truth = data_test$grade_binary,
+  predict(rf_fit_new, data_test),
+  predict(rf_fit_new, data_test, type = "prob")
+)
+
+# ROC curve on test data
+plot4_smoke <- autoplot(
+  roc_curve(rf_test_preds, truth, .pred_1)
+)
+
+metrics(rf_test_preds, truth, .pred_class, .pred_1)
+```
+
+## Results {#sec-results}
+
+We first examined univariate logistic regression models for each clinical variable to identify potential predictors of high-grade tumors and to understand their individual associations. This approach informs variable selection for the subsequent multivariate model and helps avoid overfitting. After this, we performed multivariate logistic regression to predict tumor grade, with odds ratios and relevant plots below:
+
+```{r}
+summary(model_multi)
+
+or_table <- tidy(model_multi, exponentiate = TRUE, conf.int = TRUE)
+or_table
+
+or_table_plot <- or_table %>%
+  filter(term != "(Intercept)", term != "origin_groupOther",term != "demographic.raceUnknown") %>% # didnt plot the Other groups for visibility of other categories (large std.error)
+  mutate(term = factor(term, levels = rev(term))) # reverse for top-down plotting
+
+# Forest plot of odds ratios
+ggplot(or_table_plot, aes(x = estimate, y = term)) +
+  geom_point() +
+  geom_errorbarh(aes(xmin = conf.low, xmax = conf.high), height = 0.2) +
+  geom_vline(xintercept = 1, linetype = "dashed") +  # OR=1 reference
+  xlab("Odds Ratio (95% CI)") +
+  ylab("") +
+  theme_minimal()
+
+summary(model_multi_smoke)
+
+or_table_smoke <- tidy(model_multi_smoke, exponentiate = TRUE, conf.int = TRUE)
+or_table_smoke
+
+or_table_plot_smoke <- or_table_smoke %>%
+  filter(term != "(Intercept)", term != "origin_groupOther",term != "demographic.raceUnknown") %>% # didnt plot the Other group for visibility of other categories
+  mutate(term = factor(term, levels = rev(term))) # reverse for top-down plotting
+
+# Forest plot of odds ratios
+ggplot(or_table_plot_smoke, aes(x = estimate, y = term)) +
+  geom_point() +
+  geom_errorbarh(aes(xmin = conf.low, xmax = conf.high), height = 0.2) +
+  geom_vline(xintercept = 1, linetype = "dashed") +  # OR=1 reference
+  xlab("Odds Ratio (95% CI)") +
+  ylab("") +
+  theme_minimal()
+```
+
+Nothing significant from the table of odds ratios. The addition of smoking didn't improve much. Regarding sex, males have **slightly higher odds** of high tumor grade compared to females. "**Evidence suggests males often have worse pancreatic cancer outcomes**, with higher incidence and mortality rates..." [Source](https://www.frontiersin.org/journals/oncology/articles/10.3389/fonc.2022.839779/full#:~:text=Also%2C%20worse%20survival%20has%20been,treatment%20in%20metastatic%20pancreatic%20cancer).
+
+### Prediction models result
+
+```{r}
+# without smoking
+# TOP IS LOGISTIC TRAIN - TEST
+# TOP IS RANDOM FOREST TRAIN - TEST
+(plot1 | plot2) / (plot3 | plot4)
+
+# with smoking
+# TOP IS LOGISTIC TRAIN - TEST
+# TOP IS RANDOM FOREST TRAIN - TEST
+(plot1_smoke | plot2_smoke) / (plot3_smoke | plot4_smoke)
+```
+
+Very poor, can see AUC's in @sec-methods are consistent with the plots. Both logistic and random forest do poorly. However, if I were to do this again, I would just stick with random forest. Got some errors in the methods section.
+
+## Conclusion
+
+Tumor grade is okay to use as a proxy for aggressiveness because we see in the initial linear cox regression that high-grade tumors were associated with significantly fewer days to death. Specifically, low-grade tumors have a 36% lower hazard of death. Based on survival curve estimates, median survival for low-grade tumors was 661 days compared to 511 for high grade tumors.
+
+In our multivariable logistic regression models predicting tumor grade (low vs. high), none of the clinical variables—age, sex, race, tumor location, prior malignancy, or smoking status—were statistically significant predictors after adjustment. Point estimates suggest some trends... for example, patients with tumors in the pancreatic tail or “other” origin groups had higher odds of high-grade tumors compared with the pancreatic head, and male sex and former smoking were associated with slightly higher odds of high-grade disease. However, confidence intervals were wide, indicating substantial uncertainty.
+
+The ROC curves show that the models provide little to no discriminative ability for predicting tumor grade from the available non-invasive clinical variables. Both curves lie close to the diagonal, indicating performance no better than random classification. The addition of smoking status to the model did not meaningfully improve predictive ability, and all variables remained non-significant, suggesting that routinely collected baseline clinical factors alone may have limited utility for predicting tumor aggressiveness in this cohort. This suggests that the predictors in our dataset do not contain sufficient signal to distinguish tumor grades reliably. Overall, non-invasive clinical variables obtained before diagnosis appear inadequate for accurate tumor-grade prediction in this cohort. Wee may have to always take into account pathology and/or molecular characteristics in order to make any conclusions about tumor grade.
