@@ -1,7 +1,7 @@
 ---
-title: "Your Title"
+title: "Investigation of Hepatitis B Vaccination Rates in Local NICUs and the Potential Impact of a CDS Tool"
 subtitle: "BMIN5030 Final Project"
-author: "FirstName LastName"
+author: "Alex Ruan"
 format: html
 editor: visual
 number-sections: true
@@ -14,13 +14,36 @@ Use this template to complete your project throughout the course. Your Final Pro
 
 ## Overview {#sec-overview}
 
-Give a brief a description of your project and its goal(s), what data you are using to complete it, and what two faculty/staff in different fields you have spoken to about your project with a brief summary of what you learned from each person. Include a link to your final project GitHub repository.
+Instructions: Give a brief a description of your project and its goal(s), what data you are using to complete it, and what two faculty/staff in different fields you have spoken to about your project with a brief summary of what you learned from each person. Include a link to your final project GitHub repository.
+
+My text:
+
+> I am planning to use EHR (Epic, Clarity) data to look at the impact of a clinical decision support tool (Quality Improvement/Safety Rounding Checklist) used by four neonatal internsive care units on a variety of clinical outcomes, such as vaccination, metabolic screen ordering, and central line days, among other clinical outcomes. Specifically, would hope to show via regression methods that the use of this tool has led to an improvement in these outcomes.
+
+Two faculty mentors include:
+
+> Leah Carr, MD, Assistant Professor of Clinical Pediatrics, Attending Neonatology and Clinical Informaticist, CHOP/Penn
+>
+> Christopher Bonafide, MD, MSCE, Associate Professor of Pediatrics, CHOP/Penn
+
+In discussion with my faculty mentors:
+
+> They suggested that I pare down my initial analysis to focus on one outcome as each one would be a hefty analysis. Specifically, after discussion, they recommended that I focus on hepatitis b vaccination rates as something of clinical interest, but also more manageable in the time frame of this project. Specifically, this project will aim to assess the impact of a QI/Safety Rounding Checklist - a clinical decision support tool - implemented across four  NICUs on hepatitis b vaccination rates. This project will use deidentified EHR data (Epic, Clarity) and analysis will be done in aggregate to not reveal local site data.
 
 ## Introduction {#sec-introduction}
 
 Describe the problem addressed, its significance, and some background to motivate the problem. This should extend what is in the @sec-overview.
 
 Explain why your problem is interdisciplinary, what fields can contribute to its understanding, and incorporate background related to what you learned from meeting with faculty/staff.
+
+> There is a well-established body of research associating checklists with improved outcomes, such as improved preferred language documentation.^1-2^ While prior work in a NICU has demonstrated success with Epic integration of a checklist, this was limited to a single quaternary academic unit.^3^
+>
+> In 2019, a local level III NICU in our health system, implemented a REDCap-based checklist to support local quality improvement (QI) and safety initiatives, but compliance with the tool was less than 50%. A 2023 provider survey revealed low perceived relevance and high burden, with key barriers including workflow interruptions and tool accessibility. Feedback strongly supported Epic integration. The same instance of Epic is live in four  NICUs. Discussions with leadership of these NICUs revealed strong support for the design and implementation of a standardized network-wide tool, allowing for the development of an Epic-based CDS tool.
+>
+> In the period of December 2024-March 2025, the four NICUs went live with this tool. Key results from this project include a statistically significant increase in the average biweekly compliance from 25% to 90% from October 2023 to October 2025 based on a statistical process control p-chart at HUP. Across all four NICUs, average compliance was 86% as of October 2025. Survey data (67% response rate,
+> 66/98) will also be shared and indicated that most NICU clinicians found the tool easy to use, clinically relevant, and beneficial for patient safety.
+>
+> While there has been good data to show that such a tool supports clinical processes and workflows, it is unclear what effect it may have on clinical outcomes of interest. As such, this project will aim to assess the impact of a QI/Safety Rounding Checklist - a clinical decision support tool - implemented across four NICUs on hepatitis b vaccination rates. This project will use deidentified EHR data (Epic, Clarity) and analysis will be done in aggregate to not reveal local site data.
 
 ## Methods {#sec-methods}
 

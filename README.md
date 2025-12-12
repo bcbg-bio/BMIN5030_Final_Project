@@ -1,5 +1,9 @@
-# BMIN5030 Final Project
+# BMIN5030 Final Project - Fall 2025
 
+***Text added:
+This repo includes the .qmd and .html file for my final BMIN 5030 project that looked at the impact of a CDS rounding checklist tool on hepatitis b vaccination rates in the NICU. This will use de-identified EHR data. All analyses are done in aggregate. 
+
+***Text below is from the initial readme document
 This repository contains templates for the final written report and GitHub repository. Follow the instructions below to clone this repository, and then turn in your final project's code via a pull request to this repository.
 
 1. To start, **fork** this BMIN503_Final_Project repository.
