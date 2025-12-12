@@ -1,19 +1,5 @@
 # BMIN5030 Final Project
 
-This repository contains templates for the final written report and GitHub repository. Follow the instructions below to clone this repository, and then turn in your final project's code via a pull request to this repository.
+This repository contains the code for Claire Lai's BMIN 5030 Final Project. This project aims to understand Philadelphia's litter problem to better target public health and sanitation interventions. Litter and neighborhood cleanliness are important social determinants of health that can negatively affect the residents of the city and is an important issue in the city of Philadelphia. 
 
-1. To start, **fork** this BMIN503_Final_Project repository.
-1. **Clone** the forked repository to your computer.
-1. Modify the files provided, add your own, and **commit** changes to complete your final project.
-1. **Push**/sync the changes up to your GitHub account.
-1. Create a **pull request** on this, the original BMIN503_Final_Project, repository to turn in your final project.
-
-
-Follow the instructions [here][forking] if you are unsure what the above steps mean.
-
-DUE DATE FOR FINAL VERSION: 12/12/25 11:59PM EST. This is a hard deadline. Turn in whatever you have by this date.
-
-
-<!-- Links -->
-[forking]: https://guides.github.com/activities/forking/
-
+The datasets contained in this repo are CSV and shape files for the 2017 Philly Litter Index, as well as shape files of Philadelphia planning districts and the 2024 location data of Big Belly Waste Baskets in the city.
