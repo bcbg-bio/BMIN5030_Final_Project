@@ -1,4 +1,16 @@
-# BMIN5030 Final Project
+# BMIN5030 Final Project - Exploring Association between Early Antibiotic Administration and Improved Outcomes in Sepsis Treatment: A MIMIC-IV Analysis
+
+## Key Files:
+* `Association between TTA and Improved Outcomes.qmd`: The main R notebook for analysis.
+* `Association between TTA and Improved Outcomes.html`: The rendered report.
+
+## Prerequisite:
+* **MIMIC-IV Data:**
+  * **Demo Version:** used for dictionary for final pipeline.
+  * **Full Version:** Required to reproduce the complete analysis and final results.
+
+* **R Packages:**
+`tidyverse` (includes dplyr, ggplot2, tidyr, lubridate, stringr, etc.),`zoo`,`gridExtra`,`scales`,`table1`,`broom`,`DBI`,`bigrquery`
 
 #### Overview
 
