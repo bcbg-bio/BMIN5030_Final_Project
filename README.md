@@ -1,19 +1,11 @@
-# BMIN5030 Final Project
+# Study Summary: 
+Embedding hepatitis C virus (HCV) screening during hospitalization can improve diagnosis of HCV; however, linkage to outpatient care is needed to ensure access to curative treatment. Since October 2023, Penn Medicine has implemented a default HCV screening and linkage program for adults admitted to the hospital to improve diagnosis of HCV viremia and allow for proactive linkage of such patients to outpatient HCV care. This project will evaluate the effectiveness of the program using the HCV Care Cascade framework to identify proportion of patient successfully completing each step along the care cascade to ultimate confirmation of HCV cure. The analysis will focus on identifying factors associated with successful HCV care engagement after linkage to outpatient HCV care among people with HCV viremia identified at time of hospitalization. The barriers and facilitators to care engagement will inform further programmatic interventions to improve access to curative HCV treatment.
 
-This repository contains templates for the final written report and GitHub repository. Follow the instructions below to clone this repository, and then turn in your final project's code via a pull request to this repository.
+# Study Details:
+Data source: Penn Medicine Hepatitis C Screening and Linkage Program - de-identified (dataset not publically available)
 
-1. To start, **fork** this BMIN503_Final_Project repository.
-1. **Clone** the forked repository to your computer.
-1. Modify the files provided, add your own, and **commit** changes to complete your final project.
-1. **Push**/sync the changes up to your GitHub account.
-1. Create a **pull request** on this, the original BMIN503_Final_Project, repository to turn in your final project.
+Inclusion: Patients with HCV viremia identified by the default inpatient hepatitis C admission order (ref: DOI: 10.1001/jamanetworkopen.2022.2427) 
 
+Study period: October 16, 2023 - April 13, 2025 
 
-Follow the instructions [here][forking] if you are unsure what the above steps mean.
-
-DUE DATE FOR FINAL VERSION: 12/12/25 11:59PM EST. This is a hard deadline. Turn in whatever you have by this date.
-
-
-<!-- Links -->
-[forking]: https://guides.github.com/activities/forking/
-
+Follow-up: Patients followed through November 30, 2025 to assess completion of care cascade steps
