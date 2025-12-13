@@ -1,0 +1,686 @@
+---
+title: "Direct cost of Glaucoma Treatment and Management by Disease Severity
+"
+subtitle: "BMIN5030 Final Project"
+author: "Meqdad Saeed"
+format: html
+editor: visual
+number-sections: true
+embed-resources: true 
+---
+
+## Overview
+
+Glaucoma is a leading cause of irreversible vision loss worldwide and represents a growing public health issue and economic burden in the United States. Primary open-angle glaucoma (POAG), the most common subtype, is a progressive optic neuropathy that usually remains asymptomatic until significant visual field loss has occurred. And with increasing in the disease severity, the patients require more monitoring, medical and surgical interventions, all of which contribute to rising healthcare costs.
+
+Understanding how costs accumulate across mild, moderate, and severe stages of disease is essential for optimizing the allocation of resources cost-effective care delivery, and the development of personalized management strategies.
+
+This project highlights the direct medical costs associated with POAG management at a single eye center, stratified by disease severity. Through quantifying of costs related to encounter visits, medications, and procedures, this project aims to provide an insight how the costs of this disease evlove between stages as it's progress.
+
+## Introduction
+
+Glaucoma, often referred to as the silent thif of sight, it's a group of progressive optic neuropathies characterized by damage to the optic nerve, resulting in irreversible visual field loss. In starts with gradual peripheral vision loss that might go unnoticed. However, in advanced severe cases leading to blindness.
+
+Primary open-angle glaucoma (POAG) accounts for approximately 70–80% of all glaucoma cases and affects an estimated 4 million individuals in the United States. This prevalence is projected to rise to 7.32 million by 2050. In parallel with this growing public health burden, glaucoma represent an economic strain on the healthcare system. Medicare expenditures for glaucoma alone were estimated at \$2.2 billion in 2018 and the annual cost associated with vision loss or blindness can exceed \$16,000 per person.
+
+Although prior studies have documented the overall economic impact of glaucoma, this project will try to  breakdown of direct medical costs by disease severity—focused specifically on POAG. Such detail is critical, as clinical management intensifies with disease progression, involving increased medication burden, more frequent clinical visits, advanced imaging, laser procedures, and incisional surgeries.
+
+A clearer understanding of where costs accrue across disease stages, whether driven by medications, encounter visits, or procedural, could play a key role in supporting the value-based glaucoma management. Therefore, the objective of this project is to quantify and compare direct medical costs associated with mild, moderate, and severe POAG at a single center, providing evidence to guide cost-effective and personalized care strategies.
+
+## Methods
+
+### Study Design and Data
+
+This project used a single center-2-year retrospective dataset for patients diagnosed with primary open-angle glaucoma (POAG). The dataset included encounter, procedure and medication records. All data were de-identified and linked unsing anonymized patients ID to ensure patient privacy and confidentiality.
+
+### Data Processing
+
+The data underwent cleaning and preprocessing prior to analysis. This included duplicate records removal and missing values handling. The severity of disease in each patient was determined based on the ICD10 diagnostic codes and for patients with Bilateral POAG with differing severity classifications between right and left eyes, the more advance severity (Worst eye severity ) was assigned as the patient level disease severity to reflect overall clinical burden.
+
+### Study Population
+
+The study population was defined using inclusion and exclusion criteria.
+
+#### Inclusion criteria
+
+Patients were included if they met the following criteria:
+
+1-Age ≥ 40 years,
+
+2-Documented diagnosis of POAG
+
+3- ≥ 2 glaucoma-related encounters per year, ensuring a good compliance
+
+#### Exclusion criteria
+
+Patient with any other ocular condition were excluded to avoid any confounding effect on the cost.
+
+### Cost Assessment
+
+Cost data were preprocessed within the dataset using Centers for Medicare & Medicaid Services (CMS) reimbursement list and Luxidrug . Costs were calculated for clinical encounters, procedures, and medications sepaeratly and then aggregated at the patient level for analysis.
+
+### Statistical Analysis
+
+Descriptive analyses were performed to summarize patient demographic characteristics, healthcare utilization, and costs across POAG- glaucoma severity categories. Utilization measures included the mean number of glaucoma-related encounter visits, medications, and procedures per patient. Cost measures were summarized as mean annual costs by severity level.
+
+To evaluate demographic factors associated with advanced glaucoma, a binary logistic regression model was fitted with glaucoma severity as the dependent variable. Severity was considered based on the worst-eye classification (severe vs mild/moderate). Age, sex, and ethnicity were included as independent variables. Model results were reported as odds ratios (ORs) with 95% confidence intervals (CIs) and corresponding p-values.
+
+Model discrimination was assessed using ROC curve analysis. The area under the ROC curve -AUC- was calculated to quantify the ability of the model to distinguish between severe and non-severe glaucoma. ROC curves were generated using predicted probabilities from the logistic regression model.
+
+#### Package loading
+
+```{r}
+#Load packages 
+
+library(dplyr)
+library(tidyr)
+library(readr)
+library(ggplot2)
+library(tidyverse)
+library(broom)
+
+
+```
+
+#### Data loading
+
+Encounter, procedures and medication level dataset were imported from CSV files for the subsequent analysis.
+
+```{r}
+#Import dataset
+
+encounters  <- read.csv("/Users/meqdadsaeed/Downloads/encounters.csv")
+procedures  <- read.csv("/Users/meqdadsaeed/Downloads/procedures.csv")
+medications <- read.csv("/Users/meqdadsaeed/Downloads/medications.csv")
+```
+
+#### Glaucoma severity mapping and defining the severity level
+
+ICD-10 glaucoma codes for right and left eye are mapped to numeric values, and the more advanced (Worst eye) severity was assigned as a patient level seveirty in cases were the patient has different severity levels for each eye.
+
+```{r}
+
+##Map ICD10 severity to numerical values and creat worse eye severity column
+
+severity_map_num <- c("Mild" = 1, "Moderate" = 2, "Severe" = 3)
+
+encounters <- encounters %>%
+  mutate(
+    sev_R = severity_map_num[ICD10_right_eye],
+    sev_L = severity_map_num[ICD10_left_eye],
+    worst_eye_num = pmax(sev_R, sev_L, na.rm = TRUE),
+    worst_eye_severity = case_when(
+      worst_eye_num == 1 ~ "Mild",
+      worst_eye_num == 2 ~ "Moderate",
+      worst_eye_num == 3 ~ "Severe",
+      TRUE ~ NA_character_
+    ),
+    worst_eye_severity = factor(
+      worst_eye_severity,
+      levels = c("Mild", "Moderate", "Severe"),
+      ordered = TRUE
+    ),
+    surgery_atleast_once = surgery_..1
+  )
+
+
+```
+
+#### Data cleaning and missing value handling
+
+Handling null values in the demographic and utilization variables to ensure consistency throughout the analysis. Race and ethnicity missing values were assigned as other and ND respectively. Missing cost values set to zero.
+
+```{r}
+# Race_to be recordered as other if the value is null
+encounters$race[is.na(encounters$race)] <- "Other"
+
+# Ethnicity_to be recordered as ND if the value is null
+encounters$ethnicity[is.na(encounters$ethnicity)] <- "ND"
+
+## cost realted columns 
+# # Glaucoma_visits_record 0 if missing 
+encounters$num_glaucoma_visits[is.na(encounters$num_glaucoma_visits)] <- 0
+
+# Total drops_record 0 if missing 
+encounters$total_glaucoma_drops[is.na(encounters$total_glaucoma_drops)] <- 0
+
+# Encounter cost_record 0 if missing 
+encounters$annual_encounter_cost[is.na(encounters$annual_encounter_cost)] <- 0
+
+```
+
+#### Cohort definition-Applying inclusion and Exclusion criteria
+
+Applying the inclusion and exclusion criteria
+
+```{r}
+
+##Applying the cohort inclsuion criteria 
+#patient_Age above 40_must havePOAG glucoma in the diagnois_with atleast 2 glaucoma visits per year
+
+
+
+#exclusion of any patient with other ocular condition
+encounters_no_other_dx <- encounters %>%
+  filter(other_ocular_dx == "None")
+
+# inclusion 
+cohort <- encounters_no_other_dx %>%
+  filter(
+    age >= 40,
+    primary_ocular_dx == "POAG",
+    num_glaucoma_visits >= 2,
+  ) %>%
+  distinct(anonymized_id, .keep_all = TRUE)
+
+
+
+
+
+# Quick summary checks
+nrow(cohort)                                  
+table(cohort$worst_eye_severity, useNA="ifany") 
+table(cohort$sex)
+
+
+```
+
+```{r}
+
+#check for duplicats in patient records&unique patient level data
+
+sum(duplicated(cohort$anonymized_id))
+
+length(unique(cohort$anonymized_id))
+nrow(cohort)
+```
+
+```{r}
+#converting the main varibles to categorical factors for the next steps 
+
+cohort <- cohort %>%
+  mutate(
+    sex = as.factor(sex),
+    race = as.factor(race),
+    ethnicity = as.factor(ethnicity),
+    worst_eye_severity = as.ordered(worst_eye_severity)
+  )
+```
+
+#### Cost aggregation and setting cost per patient
+
+Merging the cohort encounter, procedures and medications data into a one dataset for cost analysis by glaucoma severity
+
+```{r}
+
+##cost_analysis
+
+#procedures cost_patient level 
+procedures_cost <- procedures %>%
+  group_by(anonymized_id) %>%
+  summarise(
+    total_surgery_cost = sum(procedure_cost, na.rm = TRUE)
+  )
+
+#medication cost_patient level
+medication_cost <- medications %>%
+  group_by(anonymized_id) %>%
+  summarise(
+    total_med_cost = sum(annual_med_cost, na.rm = TRUE)
+  )
+
+#encounter cost__patient level
+encounter_cost <- cohort %>%
+  group_by(anonymized_id) %>%
+  summarise(
+    total_encounter_cost = sum(annual_encounter_cost, na.rm = TRUE)
+  )
+
+#join procedures, medication and procedures into cost_analysis_data 
+cost_analysis_data <- cohort %>%
+  left_join(procedures_cost, by = "anonymized_id") %>%
+  left_join(medication_cost, by = "anonymized_id") %>%
+  left_join(encounter_cost, by = "anonymized_id")
+
+# cost variable naming and making sure onlyvalid cost considered_without missing values 
+cost_analysis_data <- cost_analysis_data %>%
+  mutate(
+    procedure_cost = ifelse(!is.na(total_surgery_cost), total_surgery_cost, 0),
+    medication_cost = ifelse(!is.na(total_med_cost), total_med_cost, 0),
+    encounter_cost  = ifelse(!is.na(total_encounter_cost), total_encounter_cost, 0)
+  )
+
+
+```
+
+#### Cost stratification by glaucoma severity
+
+Total annual cost were calculated at patient level by summing encounter, procedure and medication costs. Mean and total costs were summarized per severity to quantify differences across different severity stages.
+
+```{r}
+
+# Cost of medication, procedures and encounters by severity and category
+
+
+cost_analysis_data <- cost_analysis_data %>%
+  mutate(
+    total_annual_cost = procedure_cost +
+                        medication_cost +
+                        encounter_cost
+  )
+
+#exclude NA
+cost_analysis_data <- cost_analysis_data %>%
+  filter(!is.na(worst_eye_severity))
+
+#summarize mean and total costs by glaucoma severity
+
+cost_by_severity <- cost_analysis_data %>%
+  group_by(worst_eye_severity) %>%
+  summarise(
+    n_patients = n(),
+    
+    mean_encounter_cost = mean(encounter_cost, na.rm = TRUE),
+    mean_procedure_cost = mean(procedure_cost, na.rm = TRUE),
+    mean_medication_cost = mean(medication_cost, na.rm = TRUE),
+    
+    total_encounter_cost = sum(encounter_cost, na.rm = TRUE),
+    total_procedure_cost = sum(procedure_cost, na.rm = TRUE),
+    total_medication_cost = sum(medication_cost, na.rm = TRUE),
+    
+    mean_total_cost = mean(total_annual_cost, na.rm = TRUE),
+    total_annual_cost = sum(total_annual_cost, na.rm = TRUE)
+  )
+
+
+#mean_cost_by severity_ordered severity 
+cost_analysis_data$worst_eye_severity <- factor(
+  cost_analysis_data$worst_eye_severity,
+  levels = c("Mild", "Moderate", "Severe"),
+  ordered = TRUE
+)
+
+# mean cost per category and severity
+mean_cost_by_severity <- cost_analysis_data %>%
+  group_by(worst_eye_severity) %>%
+  summarise(
+    mean_encounter_cost  = mean(encounter_cost, na.rm = TRUE),
+    mean_procedure_cost  = mean(procedure_cost, na.rm = TRUE),
+    mean_medication_cost = mean(medication_cost, na.rm = TRUE),
+    .groups = "drop"
+  ) %>%
+  mutate(
+    mean_total_cost = mean_encounter_cost +
+                      mean_procedure_cost +
+                      mean_medication_cost
+  )
+
+
+```
+
+```{r}
+
+#mean_cost_by severity___severity is ordered
+cost_analysis_data$worst_eye_severity <- factor(
+  cost_analysis_data$worst_eye_severity,
+  levels = c("Mild", "Moderate", "Severe"),
+  ordered = TRUE
+)
+
+# mean cost per category and severity
+mean_cost_by_severity <- cost_analysis_data %>%
+  group_by(worst_eye_severity) %>%
+  summarise(
+    mean_encounter_cost  = mean(encounter_cost, na.rm = TRUE),
+    mean_procedure_cost  = mean(procedure_cost, na.rm = TRUE),
+    mean_medication_cost = mean(medication_cost, na.rm = TRUE),
+    .groups = "drop"
+  ) %>%
+  mutate(
+    mean_total_cost = mean_encounter_cost +
+                      mean_procedure_cost +
+                      mean_medication_cost
+  )
+
+
+#resturcture_mean cost for the visualizations in the results 
+
+mean_cost_long <- mean_cost_by_severity %>%
+  select(worst_eye_severity,
+         mean_encounter_cost,
+         mean_procedure_cost,
+         mean_medication_cost) %>%
+  pivot_longer(
+    cols = c(mean_encounter_cost,
+             mean_procedure_cost,
+             mean_medication_cost),
+    names_to = "Cost_Type",
+    values_to = "Mean_Cost"
+  )
+```
+
+## Results:
+
+#### Cohort size:
+
+Cohort size after cleaning , processing and applying the inclusion and exclusion criteria earlier
+
+```{r}
+#Cohort number after applying the inclusion and exclusion criteria earlier 
+
+nrow(cohort)                                  
+table(cohort$worst_eye_severity, useNA="ifany") 
+table(cohort$sex)
+```
+
+#### Baseline demographic and severity stages:
+
+```{r}
+severity_pie <- cost_analysis_data %>%
+  count(worst_eye_severity)
+```
+
+```{r}
+##Cohort_Distribution across severity stages 
+
+ggplot(severity_pie,
+       aes(x = "", y = n, fill = worst_eye_severity)) +
+  geom_col(width = 1, color = "white") +
+  coord_polar(theta = "y") +
+  labs(
+    title = "Distribution of Glaucoma Severity",
+    fill = "Severity"
+  ) +
+  scale_fill_manual(
+    values = c(
+      "Mild" = "#66C2A5",
+      "Moderate" = "#FC8D62",
+      "Severe" = "#8DA0CB"
+    )
+  ) +
+  theme_void()
+```
+
+```{r}
+
+#Age distribution across glaucoma stages 
+
+
+#Violin_plot_for age and severity 
+
+ggplot(cohort,
+       aes(x = worst_eye_severity, y = age)) +
+  geom_violin(fill = "lightblue", alpha = 0.6, color = NA) +
+  geom_jitter(width = 0.15, alpha = 0.2) +
+  labs(
+    title = "Age and Glaucoma Severity",
+    x = "Severity",
+    y = "Age (years)"
+  )
+
+```
+
+```{r}
+
+#sex_distribution across glucoma severity 
+
+ggplot(cohort, aes(x = worst_eye_severity, fill = sex)) +
+  geom_bar(position = "dodge", width = 0.7) +
+  labs(
+    title = "Sex Distribution Across Glaucoma Severity (Worst Eye)",
+    x = "Severity",
+    y = "Count",
+    fill = "Sex"
+  ) +
+  scale_fill_manual(
+    values = c("M" = "#2166ac", "F" = "#b2182b")
+  ) +
+  theme_minimal(base_size = 14)
+```
+
+```{r}
+
+#race_distribution across glaucoma severity 
+
+#visualization of race distribution 
+
+cohort %>%
+  mutate(
+    race_grouped = case_when(
+      race %in% c("Unknown", "Other") ~ "Other/Unknown",
+      TRUE ~ race
+    )
+  ) %>%
+  dplyr::count(worst_eye_severity, race_grouped) %>%
+  group_by(worst_eye_severity) %>%
+  mutate(pct = n / sum(n) * 100) %>%
+  ggplot(aes(x = worst_eye_severity, y = pct, fill = race_grouped)) +
+  geom_col() +
+  labs(
+    title = "Race Distribution by Glaucoma Severity (Percentage)",
+    x = "Severity",
+    y = "Percentage (%)",
+    fill = "Race"
+  ) +
+  scale_fill_brewer(palette = "Set2") +
+  theme_minimal(base_size = 14)
+```
+
+#### Healthcare Utilization by glaucoma Severity
+
+```{r}
+
+## mean number of interventions_(medications, procuders and encounters)_per severity stage
+
+###
+num_procedures <- procedures %>%
+  group_by(anonymized_id) %>%
+  summarise(
+    num_procedures = n(),
+    .groups = "drop"
+  )
+
+util_by_severity <- cohort %>%
+  left_join(num_procedures, by = "anonymized_id") %>%
+  mutate(num_procedures = ifelse(is.na(num_procedures), 0, num_procedures)) %>%
+  group_by(worst_eye_severity) %>%
+  summarise(
+    mean_visits     = round(mean(num_glaucoma_visits,  na.rm = TRUE), 1),
+    mean_meds       = round(mean(total_glaucoma_drops, na.rm = TRUE), 1),
+    mean_procedures = round(mean(num_procedures,       na.rm = TRUE), 1),
+    .groups = "drop"
+  )
+
+
+
+
+```
+
+```{r}
+
+##Visulization of medications, procuders and encounters utilization in each Severity 
+
+util_long <- util_by_severity %>%
+  pivot_longer(
+    cols = c(mean_visits, mean_meds, mean_procedures),
+    names_to = "Measure",
+    values_to = "Mean_value"
+  ) %>%
+  mutate(
+    Measure = recode(
+      Measure,
+      mean_visits     = "Visits per Year",
+      mean_meds       = "Medications",
+      mean_procedures = "Procedures per Year"
+    )
+  )
+
+ggplot(util_long,
+       aes(x = worst_eye_severity, y = Mean_value, fill = worst_eye_severity)) +
+  geom_col(width = 0.7) +
+  geom_text(
+    aes(label = Mean_value),
+    vjust = -0.3,
+    size = 4
+  ) +
+  facet_wrap(~ Measure, scales = "free_y") +
+  labs(
+    title = "Mean Glaucoma Healthcare Utilization by Severity",
+    x = "Glaucoma Severity (Worst Eye)",
+    y = "Mean per Patient"
+  ) +
+  scale_fill_brewer(palette = "Set2") +
+  theme_minimal(base_size = 14) +
+  theme(
+    legend.position = "none",
+    strip.text = element_text(face = "bold"),
+    plot.title = element_text(face = "bold")
+  )
+
+```
+
+#### Cost outcomes by glaucoma severity:
+
+```{r}
+
+#mean_annual_cost for medication,encounters and procedures in each category
+mean_cost_by_severity <- cost_analysis_data %>%
+  group_by(worst_eye_severity) %>%
+  summarise(
+    mean_encounter_cost  = round(mean(encounter_cost,  na.rm = TRUE), 0),
+    mean_procedure_cost  = round(mean(procedure_cost,  na.rm = TRUE), 0),
+    mean_medication_cost = round(mean(medication_cost, na.rm = TRUE), 0),
+    mean_total_cost      = round(mean(total_annual_cost,      na.rm = TRUE), 0),
+    .groups = "drop"
+  )
+
+mean_cost_by_severity
+
+
+```
+
+##### Medication costs showed the largest contribution to the total costs across all glaucoma severity levels, with increasing contribution observed towards increasing severity, as shown in the next visualization.
+
+```{r}
+##cost_bar_visualization for accumalitive cost per severity 
+#plot_ the mean of medication, procuders, encounters in each catergory and how much it contributes to the total
+mean_cost_long <- mean_cost_by_severity %>%
+  select(worst_eye_severity,
+         mean_encounter_cost,
+         mean_procedure_cost,
+         mean_medication_cost) %>%
+  pivot_longer(
+    cols = c(mean_encounter_cost,
+             mean_procedure_cost,
+             mean_medication_cost),
+    names_to  = "Cost_type",
+    values_to = "Mean_cost"
+  )
+
+ggplot(mean_cost_long,
+       aes(x = worst_eye_severity, y = Mean_cost, fill = Cost_type)) +
+  geom_col() +
+  labs(
+    title = "Mean Cost by Glaucoma Severity",
+    x = "Severity",
+    y = "Mean Annual Cost (USD)"
+  ) +
+  scale_fill_manual(
+    values = c(
+      mean_encounter_cost  = "#2166AC",
+      mean_procedure_cost  = "#B2182B",
+      mean_medication_cost = "#4D4D4D"
+    ),
+    labels = c(
+      mean_encounter_cost  = "Encounter cost",
+      mean_procedure_cost  = "Procedure cost",
+      mean_medication_cost = "Medication cost"
+    )
+  )
+
+```
+
+```{r}
+#list of medication classes shown in the patient records
+
+unique(medications$medication_class)
+
+
+
+```
+
+#### Logistic regression – factors associated with severe glaucoma
+
+A binary logistic regression model was used to evaluate demographic predictors of severe/ advanced glaucoma severity. An assessment of model discrimination was done using receiver operating characteristic-ROC-curve analysis and area under the curve -AUC.
+
+```{r}
+#converting severity into binary(severe VS Moderate and Mild)
+
+cost_analysis_data <- cost_analysis_data %>%
+  mutate(
+    severe_binary = ifelse(worst_eye_severity == "Severe", 1, 0)
+  )
+
+```
+
+```{r}
+## Fit binary logistic regression model
+library(pROC)
+
+log_model <- glm(
+  severe_binary ~ age + sex + ethnicity,
+  data   = cost_analysis_data,
+  family = binomial
+)
+
+#model_summary 
+
+summary(log_model)
+
+#extract odds ratios with confidence intervals
+log_or <- tidy(log_model, exponentiate = TRUE, conf.int = TRUE)
+log_or
+
+
+# predicted probabilities
+cost_analysis_data$pred_prob <- predict(log_model, type = "response")
+
+# AUC and ROC calculation 
+
+roc_obj <- roc(cost_analysis_data$severe_binary, cost_analysis_data$pred_prob)
+auc_value <- auc(roc_obj)
+auc_value
+
+#plot_ROC_curve
+
+plot(roc_obj,
+     col = "#1f78b4",
+     lwd = 3,
+     main = paste("ROC Curve (AUC =", round(auc_value, 3), ")"))
+
+
+```
+
+In this multivariable logistic regression model, male sex was significantly associated with increased odds of severe glaucoma (OR = 1.81, 95% CI 1.38–2.38; *p* \< 0.001). Age was positively but not significantly associated with severe disease (OR = 1.01 per year; *p* = 0.22). Ethnicity was not significantly associated with glaucoma severity, although non-Hispanic ethnicity showed a trend toward lower odds of severe disease (*p* = 0.07). The model demonstrated limited discrimination, with an AUC of 0.60.
+
+## Results and key findings 
+
+The final cohort included 1,054 patients with primary open-angle glaucoma, distributed across mild (39.6%), moderate (32.6%), and severe (27.8%) disease satge based on the  worst-eye severity. Mean age increased with more severe stages, and male patients comprised a higher proportion of those with severe disease. Healthcare utilization increased progressively with severity, with mean annual visits increasing from 3.1 in mild disease to 3.7 in severe disease, at the same time higher medication burden (1.4 vs 2.4 medications per patient) and to less extent a greater procedural utilization. Mean annual healthcare costs, which comined all direct costs also increased with severity, rising from \$1,821 for mild glaucoma to \$2,647 for severe disease. Intenstignly, the largest component of the total costs across all stages driven primarily by medication costs, and this could be explained by increasing the presciped frequincy of the eye drops and using a higher number of medications to control the disease. In multivariable logistic regression, male sex was significantly associated with increased odds of severe glaucoma (OR 1.81, 95% CI 1.38–2.38), while age showed a positive but non-significant association. Ethnicity was not significantly associated with severity. The model demonstrated limited discrimination, with an area under the ROC curve of 0.60.
+
+## **Study Contribution, Limitations, and Next Steps**
+
+This project quantifies severity specific healthcare utilization and direct medical costs among patients with primary open-angle glaucoma, showing increasing economic burden with advancing disease severity. Despite age and male sex being associated with disease severity, consistent with prior literature, reliance on single-center data and primarily demographic variables resulted in modest predictive performance of the modal and limited generalizability. More importantly, observed cost and utilization patterns underscore the importance of personalized care strategies aimed at prevent or decrease the progression to severe disease stage. Future work should use larger, multi-center, and more diverse datasets, incorporate longitudinal clinical outcomes, and evaluate medication effectiveness and value to better inform cost-effective glaucoma management.
+
+## References
+
+-   Weinreb, R. N., Aung, T., & Medeiros, F. A. (2014). The pathophysiology and treatment of glaucoma: a review. *JAMA*, 311(18), 1901-1911. (This review states POAG is the most common form, representing 70-90% of cases).
+
+-   Tham YC, Li X, Wong TY, Quigley HA, Aung T, Cheng CY**.** Global prevalence of glaucoma and projections of glaucoma burden through 2040: a systematic review and meta-analysis. *Ophthalmology.* 2014;121(11):2081–2090. doi:10.1016/j.ophtha.2014.05.013
+
+-   Vajaranant TS, Wu S, Torres M, Varma R. The changing face of primary open-angle glaucoma in the United States: demographic and geographic changes from 2011 to 2050. Am J Ophthalmol. 2012;154(2):303-314.e3. doi:10.1016/j.ajo.2012.02.024​
+
+-   Rein DB, Wittenborn JS, Zhang P, et al. The Economic Burden of Vision Loss and Blindness in the United States. Ophthalmology. 2022;129(4):369–378. doi:10.1016/j.ophtha.2021.09.010​
+
+-   Wittenborn JS, Gu Q, Erdem E, et al. The Prevalence of Diagnosis of Major Eye Diseases and their Associated Payments in the Medicare Fee-for-Service Program. Ophthalmic Epidemiol. Sep 16 2021:1-13. doi:10.1080/09286586.2021.1968006​
+
+-   Friedman DS, Wolfs RC, O'Colmain BJ, et al. Prevalence of open-angle glaucoma among adults in the United States \[published correction appears in Arch Ophthalmol. 2011 Sep;129(9):1224\]. Arch Ophthalmol. 2004;122(4):532-538. doi:10.1001/archopht.122.4.532
