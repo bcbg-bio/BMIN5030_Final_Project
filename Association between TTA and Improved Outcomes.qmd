@@ -1,0 +1,1529 @@
+---
+title: "Exploring Association between Early Antibiotic Administration and Improved Outcomes in Sepsis Treatment: A MIMIC-IV Analysis"
+subtitle: "BMIN5030 Final Project"
+author: "Yuxuan Shi"
+format: html
+editor: visual
+number-sections: true
+embed-resources: true
+---
+
+------------------------------------------------------------------------
+
+## Overview {#sec-overview}
+
+This project primarily investigates the association between early antibiotic administration and patient outcomes among ICU patients diagnosed with sepsis using the MIMIC-IV dataset. The study aims to evaluate whether earlier intervention is associated with improved outcomes which is defined through a range of metrics, such as in-hospital mortality rate, ventilator-free days, and organ dysfunction progression. The goal is to identify potential clinical implications for optimizing the sepsis management processes. Some of these discrepancies stem from challenges in accurately defining the onset of sepsis, handling the time discretization for data analysis, or confounding factors such as illness severity and treatment bias. The analysis reveals that while a linear relationship between time-to-antibiotics and mortality was trivial, delayed treatment posits a negative effect on the patient outcomes; also a threshold-based analysis suggests a significant protective effect for treatment administered within one hour of sepsis onset.
+
+## Introduction {#sec-introduction}
+
+Sepsis is a leading cause of death in intensive care units (ICUs) and continues to pose major challenges to clinicians due to its complexity. Early antibiotic administration has long been considered a cornerstone of sepsis treatment, based on evidence suggesting that delays in treatment may increase mortality and worsen organ function. This concept is often operationalized as the "Golden Hour", emphasizing immediate intervention upon sepsis onset. However, the optimal timing of antibiotic administration remains controversial, as observational studies have produced mixed results. Specifically, there are strong controversies around the risk of over-resuscitation and implementation challenges.
+
+This project is interdisciplinary, combining insights from biomedical informatics, clinical medicine, and data science. From a clinical perspective, the project draws on principles of critical care and infectious disease management to define sepsis onset, select relevant outcomes, and interpret physiological indicators such as acuity scores (e.g. SOFA) trajectories; from a informatics standpoint, it involves working with high-dimensional EHR data and addressing issues such as timestep discretization and alignment, modeling, and the mitigation of confounding factors such as illness severity and treatment bias.
+
+## Methods {#sec-methods}
+
+To systematically investigate the relationship between early antibiotic administration and patient outcomes among ICU patients with sepsis, this study follows a structured analytic pipeline integrating cohort filtering, feature construction, data pre-processing, and modeling.
+
+### Data Source
+
+The MIMIC-IV v3.1 database is a large-scale critical care dataset containing information on over 300,000 hospital admissions and 60,000 ICU stays from the Beth Israel Deaconess Medical Center between 2008 and 2019, encompassing millions of clinical observations, laboratory results, and charted events. While thorough and more informative, the large-scale dataset might not be suitable for proof of concept and fast iterations at early stage. In comparison, MIMIC-IV Clinical Database Demo contains only a subset of (approximately 1% of) the full data, designed to preserve the same schema and data structure while greatly reducing the volume. Hence, this study initially develops and validates the pipeline using the demo dataset, and once functional integrity and performance are confirmed, the entire pipeline is executed to process the full MIMIC-IV v3.1 dataset. The overall workflow is designed as in the Cohort Filtering section.
+
+```{r}
+# Load necessary packages
+library(tidyverse)
+library(zoo)
+library(ggplot2)
+library(gridExtra)
+library(scales)
+library(table1)
+library(dplyr)
+library(tidyr)
+library(lubridate)
+library(stringr)
+library(broom)
+library(DBI)
+library(bigrquery)
+```
+
+To access the preprocessed dataset, the following pipeline gather all tables needed to be used in the downstream tasks. Please note that all itemids are verified during the proof of concept phase; there are also corresponding verification steps for each item in the main pipeline.
+
+Our study utilizes [MIMIC-IV v3.1](https://physionet.org/content/mimiciv/3.1/) via bigquery. In order to set up big query connection, please sign in to Physionet and request access using Google BigQuery. **In the following block, fill in the project id and google email account associated with big query.** If successful, the follow up authentication message will be shown in the console.
+
+Note that for rendering purposes, the following code blocks are commented out.
+
+```{r}
+# my_project_id <- "TO BE FILLED!!" 
+# bq_auth(email = "TO BE FILLED!!") 
+```
+
+```{r}
+# con <- dbConnect(
+#   bigrquery::bigquery(),
+#   project = "physionet-data",
+#   dataset = "mimiciv_3_1_icu",
+#   billing = my_project_id
+# )
+# 
+# # TESTING CONNECTION: 
+# # "caregiver"        "chartevents"      "d_items"          "datetimeevents"   "icustays"         "ingredientevents" "inputevents"      "outputevents"     "procedureevents" 
+# print("Testing connection...")
+# print(dbListTables(con))
+```
+
+```{r}
+# patients_db <- tbl(con, I("physionet-data.mimiciv_3_1_hosp.patients"))
+# admissions_db <- tbl(con, I("physionet-data.mimiciv_3_1_hosp.admissions"))
+# icustays_db <- tbl(con, I("physionet-data.mimiciv_3_1_icu.icustays"))
+```
+
+```{r}
+# # filter age > 18
+# cohort_base <- icustays_db %>%
+#   inner_join(admissions_db, by = c("subject_id", "hadm_id")) %>%
+#   inner_join(patients_db, by = "subject_id") %>%
+#   filter(anchor_age >= 18) %>%
+#   select(subject_id, hadm_id, stay_id, intime, outtime, admittime, deathtime, 
+#          hospital_expire_flag, gender, anchor_age, race)
+# 
+# # base model
+# cohort_local <- cohort_base %>% collect()
+# write_csv(cohort_local, "mimic_full_cohort.csv")
+```
+
+```{r}
+# # labs (lactate, Cr, Bili, Plt, PaO2)
+# target_labs <- c(50813, 50912, 50885, 51265, 50821)
+# 
+# labs_data <- tbl(con, I("physionet-data.mimiciv_3_1_hosp.labevents")) %>%
+#   filter(itemid %in% target_labs) %>%
+#   inner_join(cohort_base %>% select(subject_id, hadm_id), by = c("subject_id", "hadm_id")) %>%
+#   select(subject_id, hadm_id, charttime, itemid, valuenum) %>%
+#   collect()
+# 
+# write_csv(labs_data, "mimic_full_labs.csv")
+```
+
+```{r}
+# target_chart <- c(220052, 220181, 220739, 223900, 223901, 223835)
+# 
+# vitals_data <- tbl(con, I("physionet-data.mimiciv_3_1_icu.chartevents")) %>%
+#   filter(itemid %in% target_chart) %>%
+#   inner_join(cohort_base %>% select(subject_id, stay_id), by = c("subject_id", "stay_id")) %>%
+#   select(subject_id, stay_id, charttime, itemid, valuenum) %>%
+#   collect()
+# 
+# write_csv(vitals_data, "mimic_full_vitals.csv")
+```
+
+```{r}
+# target_urine <- c(226559, 226560, 226561, 226563, 226584)
+# 
+# urine_data <- tbl(con, I("physionet-data.mimiciv_3_1_icu.outputevents")) %>%
+#   filter(itemid %in% target_urine) %>%
+#   inner_join(cohort_base %>% select(subject_id, stay_id), by = c("subject_id", "stay_id")) %>%
+#   select(subject_id, stay_id, charttime, itemid, value) %>% 
+#   collect()
+# 
+# write_csv(urine_data, "mimic_full_urine.csv")
+```
+
+```{r}
+# # antibiotics
+# abx_data <- tbl(con, I("physionet-data.mimiciv_3_1_hosp.prescriptions")) %>%
+#   inner_join(cohort_base %>% select(subject_id, hadm_id), by = c("subject_id", "hadm_id")) %>%
+#   filter(REGEXP_CONTAINS(drug, "(?i)penicillin|ampicillin|amoxicillin|cef|ceph|meropenem|vanco|piperacillin|tazobactam|levofloxacin|cipro|clinda|metronidazole")) %>%
+#   select(subject_id, hadm_id, starttime, stoptime, drug) %>%
+#   collect()
+# 
+# write_csv(abx_data, "mimic_full_antibiotics.csv")
+```
+
+```{r}
+# # microbiology
+# micro_data <- tbl(con, I("physionet-data.mimiciv_3_1_hosp.microbiologyevents")) %>%
+#   inner_join(cohort_base %>% select(subject_id, hadm_id), by = c("subject_id", "hadm_id")) %>%
+#   select(subject_id, hadm_id, charttime, spec_type_desc, org_name) %>%
+#   collect()
+# 
+# write_csv(micro_data, "mimic_full_micro.csv")
+```
+
+```{r}
+# # vasopressors
+# # Norepi: 221906, Epi: 221289, Dopamine: 221662, Dobutamine: 221653
+# target_vaso <- c(221906, 221289, 221662, 221653)
+# 
+# vaso_data <- tbl(con, I("physionet-data.mimiciv_3_1_icu.inputevents")) %>%
+#   filter(itemid %in% target_vaso) %>%
+#   inner_join(cohort_base %>% select(subject_id, stay_id), by = c("subject_id", "stay_id")) %>%
+#   select(subject_id, stay_id, starttime, itemid, amount) %>%
+#   collect()
+# 
+# write_csv(vaso_data, "mimic_full_vaso.csv")
+```
+
+```{r}
+# # ventilation - 225792
+# vent_data <- tbl(con, I("physionet-data.mimiciv_3_1_icu.procedureevents")) %>%
+#   filter(itemid == 225792) %>%
+#   inner_join(cohort_base %>% select(subject_id, stay_id), by = c("subject_id", "stay_id")) %>%
+#   select(subject_id, stay_id, starttime, endtime, itemid) %>%
+#   collect()
+# 
+# write_csv(vent_data, "mimic_full_vent.csv")
+```
+
+```{r}
+# # diagnoses for CCI
+# dx_data <- tbl(con, I("physionet-data.mimiciv_3_1_hosp.diagnoses_icd")) %>%
+#   inner_join(cohort_base %>% select(subject_id, hadm_id), by = c("subject_id", "hadm_id")) %>%
+#   select(subject_id, hadm_id, icd_code, icd_version) %>%
+#   collect()
+# 
+# write_csv(dx_data, "mimic_full_diagnoses.csv")
+```
+
+Upon successful execution the following csv files would be generated in the current folder:
+
+├── mimic_full_antibiotics.csv
+
+├── mimic_full_cohort.csv
+
+├── mimic_full_diagnoses.csv
+
+├── mimic_full_labs.csv
+
+├── mimic_full_micro.csv
+
+├── mimic_full_urine.csv
+
+├── mimic_full_vaso.csv
+
+├── mimic_full_vent.csv
+
+└── mimic_full_vitals.csv
+
+Lastly, the items and lab items dictionary is extracted from the demo dataset. Please download the [MIMIC-IV Clinical Database Demo](https://physionet.org/content/mimic-iv-demo/2.2/) which does not require credentialed access, and place the entire folder under the current directory.
+
+├── physionet.org
+
+│   ├── ...
+
+### Cohort Filtering
+
+The study cohort will be derived from the MIMIC-IV v3.1 database, focusing on adult patients (\>= 18 years old) admitted to the intensive unit care with a clinical diagnosis of sepsis. Sepsis will be identified according to the Sepsis-3 definition—evidence of infection in conjunction with organ dysfunction, operationalized as a Sequential Organ Failure Assessment (SOFA) score \>= 2 within a 48-hour window around suspected infection. Only the first ICU admission per patient will be included to avoid within-patient correlation.
+
+Patients will be excluded if they have missing antibiotic administration time stamps, lack key outcome data (e.g. discharge status), or have ICU stays shorter than 24 hours. This ensures temporal analyses are reliable and outcomes are meaningful for comparison.
+
+### Data Preprocessing and Feature Engineering
+
+Key variables will be constructed across multiple tables within MIMIC-IV.
+
+-   1\) Demographic/General Features: Age, gender, ethnicity from *patients* and *admissions*.
+
+-   2\) Clinical Characteristics: Baseline SOFA scores, comorbidities (Using the Charlson Comobidity Index), vital signals from *chartevents* and *diagnoses_icd*, Microbiology-based infection detection from *microbiologyevents.*
+
+-   3\) Treatment Variables: Timing and dosage of first antibiotic administration, vasopressor use, and mechanical ventilation extracted from *prescriptions*, *inputevents*, and *procedureevents*.
+
+-   4\) Outcome Variables: In-hospital mortality, 30-day readmission, ventilator-free days, and organ dysfunction progression derived from *admissions*, *icustays*, and longitudinal *chartevents*.
+
+In summary, tables being sourced are:
+
+-   X: *patients, admissions, chartevents, labevents, diagnoses_icd, icustays, prescriptions, inputevents, procedureevents*
+
+-   y: *admissions.discharge_location, admissions.admittime, procedureevents, chartevents*
+
+```{r}
+
+# data_dir <- "./physionet.org/files/mimic-iv-demo/2.2"
+# POC Version: loads sampled data is extracted from full MIMICIV_3_1 dataset.
+# Full Version: run 0-data_prep to retrive the processed datset first before loading.
+
+cohort_full <- read_csv("mimic_full_cohort.csv", show_col_types = FALSE)
+labs_full <- read_csv("mimic_full_labs.csv", show_col_types = FALSE)
+vitals_full <- read_csv("mimic_full_vitals.csv", show_col_types = FALSE)
+abx_full <- read_csv("mimic_full_antibiotics.csv", show_col_types = FALSE)
+vaso_full <- read_csv("mimic_full_vaso.csv", show_col_types = FALSE)
+micro_full <- read_csv("mimic_full_micro.csv", show_col_types = FALSE)
+vent_full <- read_csv("mimic_full_vent.csv", show_col_types = FALSE)
+dx_full <- read_csv("mimic_full_diagnoses.csv", show_col_types = FALSE)
+urine_full <- read_csv("mimic_full_urine.csv", show_col_types = FALSE)
+
+# var mapping to align with PoC
+patients    <- cohort_full %>% distinct(subject_id, .keep_all = TRUE)
+admissions  <- cohort_full %>% distinct(subject_id, hadm_id, .keep_all = TRUE)
+icustays    <- cohort_full
+
+labevents   <- labs_full
+prescriptions <- abx_full
+inputevents   <- vaso_full
+microbiologyevents <- micro_full
+procedureevents <- vent_full
+diagnoses_icd <- dx_full
+chartevents  <- vitals_full
+outputevents  <- urine_full
+
+# itemids would be the same as in demo
+demo_dir = "physionet.org/files/mimic-iv-demo/2.2"
+d_items <- read_csv(file.path(demo_dir, "icu/d_items.csv.gz"), show_col_types = FALSE)
+d_labitems <- read_csv(file.path(demo_dir, "hosp/d_labitems.csv.gz"), show_col_types = FALSE)
+
+mimic_full <- list(
+  patients = patients,
+  admissions = admissions,
+  icustays = icustays,
+  chartevents = chartevents,
+  labevents = labevents,
+  diagnoses_icd = diagnoses_icd,
+  prescriptions = prescriptions,
+  inputevents = inputevents,
+  procedureevents = procedureevents,
+  microbiologyevents = microbiologyevents,
+  d_items = d_items,
+  d_labitems = d_labitems,
+  outputevents = outputevents
+)
+```
+
+```{r}
+head(mimic_full)
+```
+
+As stated in section Cohort Filtering, we define onset of sepsis using the **Sepsis-3** criteria as "“life-threatening organ dysfunction caused by a dysregulated host response to infection.", in which "organ dysfunction can be identified as an acute change in total SOFA score \>= 2 points consequent to the infection," and "the baseline SOFA score can be assumed to be zero in patients not known to have preexisting organ dysfunction(Singer et al., JAMA 2016)”. Programmatically, the process proceeds as follows.
+
+#### Identifying Suspected Infections
+
+Firstly, we identify **suspected infection** using the standard antibiotic-culture pairing (blood culture collection within 24 hours after antibiotic administration, or antibiotics administered within 72 hours after culture). As shown in the code below, we first extract all systemic antibiotics from *prescriptions* table using string matching (e.g. penicillin, cephalosporin, carbapenem, etc.). Then, culture events were retrieved from *microbiologyevents*, including the collection time and specimen type. We then join two tables by subject_id and hadm_id, and filter out the antibiotic administration by time window of -24h to +72h. Lastly, since patients might have multiple antibiotic administration or cultures for same admission, all valid pairs were to reduced to a single infection onset timestamp by finding the earliest paired event timestamp (e.g. min of all min(starttime, charttime) pairs).
+
+The resulting tibble suspected_infection_onset contains one row per admission with the following variables:
+
+-   infection_time: earliest infection_related timestamp;
+
+-   first_specimen: type of the first qualifying specimen;
+
+-   n_pairs: number of valid culture-antibiotic pairs;
+
+-   suspected_infection: TRUE/FALSE;
+
+Along with primary keys (subject_id, hadm_id). The resulting tibble has shape (145, 6), identifying 85 distinct patients with 145 admissions. Within each admission, there were (median) 15 valid culture-antibiotic events pair within the valid time window.
+
+```{r}
+# 1) detect suspected infection: using a combination of cultres + antibiotics
+
+# searching antibiotics related to infection
+antibiotics <- prescriptions %>%
+  filter(
+    str_detect(
+      tolower(drug),
+      "penicillin|ampicillin|amoxicillin|cef|ceph|meropenem|imipenem|
+       vanco|piperacillin|tazobactam|azithro|levofloxacin|cipro|
+       clinda|metronidazole|linezolid|ertapenem|trimethoprim|sulfa"
+    )
+  ) %>%
+  select(subject_id, hadm_id, starttime, stoptime, drug)
+
+# extract culture events for later matching
+cultures <- microbiologyevents %>%
+  select(subject_id, hadm_id, charttime, spec_type_desc, org_name)
+
+# pair antibiotics and cultures for suspected infections
+suspected_infection <- cultures %>%
+  inner_join(antibiotics, by = c("subject_id", "hadm_id")) %>%
+  mutate(
+    diff_hours = as.numeric(difftime(starttime, charttime, units = "hours"))
+  ) %>%
+  filter(diff_hours >= -24, diff_hours <= 72)  # filter only aa in -24h to +72h window
+
+# at this step, one subject_id may map to multiple rows as multiple antibiotic administrations occured. we flatten that to map one subject_id to one admission and finds earliest infection-onset timestamp
+suspected_infection_onset <- suspected_infection %>%
+  group_by(subject_id, hadm_id) %>%
+  summarise(
+    infection_time = min(pmin(starttime, charttime, na.rm = TRUE)), # earliest infection onset
+    first_specimen = first(spec_type_desc),
+    n_pairs = n(),
+    .groups = "drop"
+  ) %>%
+  mutate(suspected_infection = TRUE)
+
+suspected_infection_onset %>%
+  summarise(
+    n_patients = n_distinct(subject_id),
+    n_admissions = n_distinct(hadm_id),
+    median_pairs = median(n_pairs)
+  )
+
+head(suspected_infection_onset)
+
+```
+
+#### Computing SOFA Trajectories
+
+We then compute **SOFA** trajectories for each admission. SOFA (Sepsis-related Organ Failure Assessment) as originally proposed by Vincent et al. (1996, *Intensive Care Medicine*, 22:707-710), evaluates six organ systems: respiratory, coagulation, liver, cardiovascular, central nervous, and real; assigning 0-4 points to each based on the degree of abnormality. The total SOFA score has a bound of 0-24. The exact variables can be retrived from tables *labevents* and *chartevents*.
+
+It is worth noting that computing SOFA from real ICU data retrospectively requires nontrivial temporal discretization and alignment, as measurements occur at irregular, clinically driven intervals. Different SOFA components are sampled at very different frequencies (e.g., blood gases every few hours, bilirubin once per day), making naive time alignment (e.g., 1 hour binning) inappropriate and lead to information distortion. Prior literature has generally converged to fixed-binning: determine a bin width (e.g., 1h, 4h), aggregate all information within the window and uses max/min/median for abnormal vitals. Upon missing entry, carried-forward/backward imputation is implemented to use most recent available value within some window (e.g., 24h for labs, 6h for vitals).
+
+As an example, the [official SOFA table](https://github.com/MIT-LCP/mimic-code/blob/main/mimic-iv/concepts/score/sofa.sql) generated by MIT-LCP MIMIC-IV team uses hourly bins to calculate SOFA score hourly. For each hour of an ICU stay, all SOFA-relevant variables are aggregated within that hour; and when multiple observations are present, worst values are selected (e.g., minimum GCS). Since most lab tests are sampled infrequently, this approach produces sparse results with majority of hourly SOFAs to be NULL. To workaround this issue, the team also applies a 24-hour rolling window to record the worst observation within, and update the SOFA score per hour.
+
+As proposed by a recent paper *Off by a Beat: Temporal Misalignment in Offline RL for Healthcare,* the author argues that this alignment technique is problematic as it allows for information on patient's future trajectory to be leaked into current time step; effectively, for sequential decision-making and real-time prediction tasks, the optimal treatment learned would be inaccurate.
+
+To better capture the nuances in computing SOFA trajectories, we start by studying the sample interval distribution for all relevant intervals.
+
+```{r}
+
+# 2) detect organ failing: SOFA score
+
+# 2.a) filter out a tibble that contains all variables needed to compute SOFA
+
+
+# select first ICU stay per subject; scope down to only suspected infection patients
+infected_icustays <- icustays %>%
+  inner_join(
+    suspected_infection_onset %>% select(subject_id, hadm_id),
+    by = c("subject_id", "hadm_id")
+  ) %>%
+  group_by(subject_id, hadm_id) %>% 
+  arrange(intime) %>%
+  slice(1) %>%
+  ungroup() %>%
+  select(subject_id, hadm_id, stay_id, intime, outtime)
+
+infected_icustays
+```
+
+Next, define the variables needed for calculating SOFA score and their related source tables. For each component, the associated response were shown and object created to be used in the next section:
+
+-   Respiratory: PaO~2~, FiO~2.~ *labevents, chartevents*
+
+```{r}
+d_labitems %>% filter(itemid == 50821)
+d_items %>% filter(itemid == 223835)
+
+paO2_itemids <- c(50821)
+fio2_itemids <- c(223835)
+```
+
+-   Coagulation: Platelet Count. *labevents*
+
+```{r}
+d_labitems %>% filter(itemid == 51265)
+
+platelet_itemids <- c(51265)
+```
+
+-   Liver: Bilirubin. labevents
+
+```{r}
+d_labitems %>% filter(itemid == 50885)
+
+bilirubin_itemids <- c(50885)
+```
+
+-   Cardiovascular: Mean Arterial Pressure (map, invasive/non-invasive), AND/OR vasopressor doses (norepinephrine, epinephrine, dopamine, dobupamine).
+
+```{r}
+d_items %>% filter(itemid == 220052)
+d_items %>% filter(itemid == 220181)
+
+map_itemids <- c(220052, 220181)
+
+# vasopressor doses
+d_items %>% filter(itemid == 221906)
+d_items %>% filter(itemid == 221289)
+d_items %>% filter(itemid == 221662)
+d_items %>% filter(itemid == 221653)
+
+norepi_itemids <- c(221906)
+epi_itemids    <- c(221289)
+dopamine_itemids <- c(221662)
+dobutamine_itemids <- c(221653)
+```
+
+-   Central Nervous System: Glasgow coma scale (eye/verbal/motor). *chartevents*
+
+```{r}
+d_items %>% filter(itemid == 220739) # eye
+d_items %>% filter(itemid == 223901) # motor
+d_items %>% filter(itemid == 223900) # verbal
+
+gcs_eye_itemids    <- c(220739)
+gcs_motor_itemids  <- c(223901)
+gcs_verbal_itemids <- c(223900)
+```
+
+-   d_items %\>% filter(itemid == 223901) \# motorRenal: Creatinine OR urine. *labevents, chartevents*
+
+```{r}
+d_labitems %>% filter(itemid == 50912)
+
+# urine outputs
+d_items %>% filter(itemid == 226559)
+d_items %>% filter(itemid == 226560)
+d_items %>% filter(itemid == 226561)
+d_items %>% filter(itemid == 226563)
+d_items %>% filter(itemid == 226584)
+
+
+creatinine_itemids <- c(50912)
+urine_itemids <- c(226559, 226560, 226561, 226563, 226584)
+```
+
+```{r}
+# extract labs needed for SOFA
+labs_raw <- labevents %>%
+  semi_join(infected_icustays, by = c("subject_id", "hadm_id")) %>%
+  filter(itemid %in% c(paO2_itemids,
+                       platelet_itemids,
+                       bilirubin_itemids,
+                       creatinine_itemids)) %>%
+  mutate(
+    var_name = case_when(
+      itemid %in% paO2_itemids         ~ "paO2",
+      itemid %in% platelet_itemids     ~ "platelets",
+      itemid %in% bilirubin_itemids    ~ "bilirubin",
+      itemid %in% creatinine_itemids   ~ "creatinine",
+      TRUE ~ NA_character_
+    ),
+    charttime = charttime
+  ) %>%
+  select(subject_id, hadm_id, charttime, var_name, value = valuenum)
+
+
+# extract vital signs + FiO2 + GCS + MAP from chartevents
+# join using icu stay id
+chartevents_raw <- chartevents %>%
+  semi_join(infected_icustays, by = c("subject_id", "stay_id")) %>%
+  filter(itemid %in% c(
+    fio2_itemids,
+    map_itemids,
+    gcs_eye_itemids,
+    gcs_motor_itemids,
+    gcs_verbal_itemids
+  )) %>%
+  left_join(icustays %>% select(stay_id, hadm_id), by = 'stay_id') %>%
+  mutate(
+    var_name = case_when(
+      itemid %in% fio2_itemids ~ "fio2",
+      itemid %in% map_itemids ~ "map",
+      itemid %in% gcs_eye_itemids ~ "gcs_eye",
+      itemid %in% gcs_motor_itemids ~ "gcs_motor",
+      itemid %in% gcs_verbal_itemids ~ "gcs_verbal",
+      TRUE ~ NA_character_
+    ),
+    charttime = charttime,
+    value = valuenum
+  ) %>%
+  select(subject_id, hadm_id, charttime, var_name, value)
+
+# extract vasopressors from procedureevents or inputevents
+# join using icu stay id
+vasopressor_raw <- inputevents %>%
+  semi_join(infected_icustays, by = c("subject_id", "stay_id")) %>%
+  filter(itemid %in% c(norepi_itemids,
+                       epi_itemids,
+                       dopamine_itemids,
+                       dobutamine_itemids)) %>%
+  left_join(icustays %>% select(stay_id, hadm_id), by = "stay_id") %>%
+  mutate(
+    var_name = case_when(
+      itemid %in% norepi_itemids ~ "norepinephrine",
+      itemid %in% epi_itemids ~ "epinephrine",
+      itemid %in% dopamine_itemids ~ "dopamine",
+      itemid %in% dobutamine_itemids ~ "dobutamine",
+      TRUE ~ NA_character_
+    ),
+    charttime = starttime,
+    value = amount
+  ) %>%
+  select(subject_id, hadm_id, charttime, var_name, value)
+
+# extract urine output from chartevents
+# join using stay id
+urine_raw <- outputevents %>%
+  semi_join(infected_icustays, by = c("subject_id", "stay_id")) %>%
+  filter(itemid %in% urine_itemids) %>%
+  left_join(icustays %>% select(stay_id, hadm_id), by = "stay_id") %>%
+  mutate(
+    var_name = "urine_output",
+    value = value,
+    charttime = charttime
+  ) %>%
+  select(subject_id, hadm_id, charttime, var_name, value)
+
+# combine
+sofa_raw_vars <- bind_rows(
+  labs_raw,
+  chartevents_raw,
+  vasopressor_raw,
+  urine_raw
+) %>%
+  arrange(subject_id, hadm_id, charttime)
+
+head(sofa_raw_vars)
+```
+
+```{r}
+# quick sanity check. all variables are intact.
+unique(sofa_raw_vars$var_name)
+```
+
+Then, we perform an analysis of sampling intervals for all SOFA related variables.
+
+```{r}
+
+# 2.b) get sampling intervals (per subject, per hadm, per variable)
+intervals <- sofa_raw_vars %>%
+  arrange(subject_id, hadm_id, var_name, charttime) %>%
+  group_by(subject_id, hadm_id, var_name) %>%
+  mutate(
+    prev_time = lag(charttime),
+    diff_mins = as.numeric(difftime(charttime, prev_time, units = "mins"))
+  ) %>%
+  ungroup() %>%
+  filter(!is.na(diff_mins) & diff_mins > 0)   # remove first obs & nonpositive diffs
+
+# summarize interval statistics per variable
+interval_summary <- intervals %>%
+  group_by(var_name) %>%
+  summarise(
+    n = n(),
+    median_min = median(diff_mins),
+    p25_min = quantile(diff_mins, 0.25),
+    p75_min = quantile(diff_mins, 0.75),
+    min_min = min(diff_mins),
+    max_min = max(diff_mins)
+  ) %>%
+  arrange(median_min)
+
+interval_summary
+
+
+# viz
+# violin Plot of sampling intervals (log-scale)
+
+ggplot(intervals, aes(x = var_name, y = diff_mins)) +
+  geom_violin(fill = "skyblue", alpha = 0.6) +
+  geom_boxplot(width = 0.1, outlier.alpha = 0.15) +
+  scale_y_log10() +
+  theme_bw() +
+  labs(
+    title = "Distribution of Sampling Intervals per Variable",
+    x = "SOFA Variable",
+    y = "Interval (minutes, log scale)"
+  )
+
+ggplot(intervals, aes(x = diff_mins)) +
+  geom_histogram(bins = 50, fill = "steelblue", alpha = 0.7) +
+  scale_x_log10() +
+  facet_wrap(~ var_name, scales = "free_y") +
+  theme_bw() +
+  theme(
+    plot.margin = margin(5.5, 5.5, 20, 5.5),  # extra room bottom
+    axis.text.x = element_text(angle = 45, hjust = 1, size = 6)
+  ) +
+  labs(
+    title = "Sampling Interval Histograms per Variable (log scale)",
+    x = "Interval (minutes)",
+    y = "Count"
+  )
+
+```
+
+As shown in the two plots, there are great variance in sample intervals across different variables. Variables such as **map** and **FiO~2~** were sampled in a regular pattern, with high counts clustered at fixed interval time. Variables such as **doubutamine** and **epinephrine** were sampled more irregularly and less frequently. The general sample interval is also of varying length; variables such as **bilirubin**, **platelets**, and **creatinine** (laboratory reports) were collected on daily basis (16\~20 hours). Hence, given the substantial variance in sampling intervals, I decided not to discretize data into fixed time windows, but perform a procedural minimum-prefix search with backward-looking records to identify those that satisfied the condition described in Sepsis-3.
+
+For each admission, a running records of all observed variables would be maintained along with current SOFA score. Whenever a new observation arrives, SOFA score would be updated and check whether the change \>= 2. If true, the updated time stamp would be considered sepsis onset. Note that our search is conducted on a subset of suspected infection patients, and according to Sepsis-3 the baseline SOFA should be 0. Hence, the goal for the search is to find (if any) the earliest SOFA score \>= 2.
+
+It is also critical to distinguish the temporal window used here from the one previously for suspected infection detection. While suspected infection was define using a \[-24h, +72h\] window to link cultures with antibiotics, the search for organ dysfunction utilizes a window of 48 hours before and up to 24 hours after the onset of infection. This wider window is derived from Singer et al. (2016), which accounts for the variable lag between infection onset and physiological deterioration. The SOFA scoring logic follows the standard 0-4 scale proposed by Vincent et al. (1996). To handle missing data, clinically normal defaults were used for imputation: missing FiO2 was assumed to be 21% (room air), and missing Glasgow Coma Scale was assumed to be 15 (fully alert).
+
+```{r}
+# 2.c) procedural search to identify SOFA change >= 2
+
+# Window slicing: "Considers a period as great as 48 hours before and up to 24 hours after onset of infection, although sensitivity analyses have tested windows as short as 3 hours before and 3 hours after onset of infection. (Singer et al. (2016)"
+sofa_window <- sofa_raw_vars %>%
+  inner_join(
+    suspected_infection_onset %>% select(subject_id, hadm_id, infection_time),
+    by = c("subject_id", "hadm_id")
+  ) %>%
+  mutate(
+    time_diff = as.numeric(difftime(charttime, infection_time, units = "hours"))
+  ) %>%
+  filter(time_diff >= -48 & time_diff <= 24)
+
+sofa_matrix <- sofa_window %>%
+  select(subject_id, hadm_id, charttime, var_name, value) %>% 
+  group_by(subject_id, hadm_id, charttime, var_name) %>%
+  summarise(value = mean(value, na.rm = TRUE), .groups = "drop") %>%
+  pivot_wider(
+    names_from = var_name,
+    values_from = value
+  ) %>%
+  arrange(subject_id, hadm_id, charttime) %>%
+  group_by(subject_id, hadm_id) %>%
+  mutate(across(everything(), ~ na.locf(., na.rm = FALSE))) %>%
+  ungroup()
+```
+
+```{r}
+
+sofa_calculated <- sofa_matrix %>%
+  mutate(
+    # Respiratory: PaO2/FiO2 ratio
+    # Imputation Logic: MIT-LCP Standard (Johnson et al.)
+    # If FiO2 missing -> assume Room Air (21%)
+    fio2_filled = ifelse(is.na(fio2), 21, fio2), 
+    pf_ratio = if_else(!is.na(paO2), paO2 / (fio2_filled / 100), NA_real_),
+    
+    sofa_resp = case_when(
+      pf_ratio < 100 ~ 4,
+      pf_ratio < 200 ~ 3,
+      pf_ratio < 300 ~ 2,
+      pf_ratio < 400 ~ 1,
+      TRUE ~ 0
+    ),
+
+    # Coagulation (Platelets)
+    sofa_coag = case_when(
+      platelets < 20 ~ 4,
+      platelets < 50 ~ 3,
+      platelets < 100 ~ 2,
+      platelets < 150 ~ 1,
+      TRUE ~ 0
+    ),
+
+    # Liver (Bilirubin)
+    sofa_liver = case_when(
+      bilirubin >= 12.0 ~ 4,
+      bilirubin >= 6.0 ~ 3,
+      bilirubin >= 2.0 ~ 2,
+      bilirubin >= 1.2 ~ 1,
+      TRUE ~ 0
+    ),
+
+    # Cardiovascular (MAP & Vasopressors)
+    sofa_cardio = case_when(
+      (!is.na(dopamine) & dopamine > 15) | (!is.na(norepinephrine) & norepinephrine > 0.1) | (!is.na(epinephrine) & epinephrine > 0.1) ~ 4,
+      (!is.na(dopamine) & dopamine > 5) | (!is.na(norepinephrine) & norepinephrine <= 0.1) | (!is.na(epinephrine) & epinephrine <= 0.1) ~ 3,
+      (!is.na(dopamine) | !is.na(dobutamine)) ~ 2,
+      map < 70 ~ 1,
+      TRUE ~ 0
+    ),
+
+    # CNS (GCS)
+    # Imputation Logic: Assume Normal (15) if missing to avoid false positives
+    gcs_score = coalesce(gcs_eye, 4) + coalesce(gcs_motor, 6) + coalesce(gcs_verbal, 5),
+    sofa_cns = case_when(
+      gcs_score <= 5 ~ 4,
+      gcs_score <= 9 ~ 3,
+      gcs_score <= 12 ~ 2,
+      gcs_score <= 14 ~ 1,
+      TRUE ~ 0
+    ),
+
+    # Renal (Creatinine & Urine)
+    sofa_renal = case_when(
+      creatinine >= 5.0 | (!is.na(urine_output) & urine_output < 200) ~ 4,
+      creatinine >= 3.5 | (!is.na(urine_output) & urine_output < 500) ~ 3,
+      creatinine >= 2.0 ~ 2,
+      creatinine >= 1.2 ~ 1,
+      TRUE ~ 0
+    ),
+    
+    total_sofa = sofa_resp + sofa_coag + sofa_liver + sofa_cardio + sofa_cns + sofa_renal
+  )
+
+# find earliest time where SOFA >= 2; since baseline SOFA assumed to be 0, find earliest time stamp.
+sepsis_onset <- sofa_calculated %>%
+  group_by(subject_id, hadm_id) %>%
+  filter(total_sofa >= 2) %>%
+  arrange(charttime) %>%
+  slice(1) %>%
+  select(subject_id, hadm_id, sepsis_onset_time = charttime, first_sofa_score = total_sofa) %>%
+  left_join(infected_icustays %>% select(subject_id, hadm_id, stay_id), 
+            by = c("subject_id", "hadm_id")) %>%
+  ungroup() %>%
+  relocate(stay_id, .after = hadm_id)
+
+head(sepsis_onset)
+```
+
+Now, sepsis_onset identifies the sepsis_onset_time base on Sepsis-3 criteria, and each trajectory is identified by subject_id, hadm_id, and stay_id. We do a quick descriptive summary on the sepsis cohort. In this step, we also explore possible confounding variables such as demographic variables; later steps will involve a more complete set of potential confounding variables that directly linked to patient's disease severity using comorbidities derived from icu_diagnoses.
+
+```{r}
+
+# Sepsis Prevalence
+n_total_patients <- n_distinct(patients$subject_id)
+n_sepsis_patients <- n_distinct(sepsis_onset$subject_id)
+n_non_sepsis <- n_total_patients - n_sepsis_patients
+sepsis_prevalence <- (n_sepsis_patients / n_total_patients) * 100
+
+cat(sprintf("Total Patients in Database: %d\n", n_total_patients))
+cat(sprintf("Patients Meeting Sepsis-3 Criteria: %d\n", n_sepsis_patients))
+cat(sprintf("Sepsis Prevalence: %.2f%%\n", sepsis_prevalence))
+
+# viz
+prev_data <- data.frame(
+  Category = c("Sepsis", "No Sepsis"),
+  Count = c(n_sepsis_patients, n_non_sepsis)
+) %>%
+  mutate(
+    Percentage = Count / sum(Count) * 100,
+    Label = paste0(Category, "\n", round(Percentage, 1), "%")
+  )
+
+
+sepsis_demographics <- sepsis_onset %>%
+  left_join(patients %>% select(subject_id, gender, anchor_age), by = "subject_id") %>%
+  left_join(admissions %>% select(hadm_id, race), by = "hadm_id") %>%
+  mutate(
+    age_group = case_when(
+      anchor_age < 40 ~ "<40",
+      anchor_age >= 40 & anchor_age < 60 ~ "40-60",
+      anchor_age >= 60 & anchor_age < 80 ~ "60-80",
+      anchor_age >= 80 ~ "80+",
+      TRUE ~ "Unknown"
+    ),
+    race_simple = case_when(
+      str_detect(race, "WHITE") ~ "White",
+      str_detect(race, "BLACK") ~ "Black",
+      str_detect(race, "HISPANIC|LATINO") ~ "Hispanic",
+      str_detect(race, "ASIAN") ~ "Asian",
+      TRUE ~ "Other/Unknown"
+    )
+  )
+
+# gender
+gender_data <- sepsis_demographics %>%
+  count(gender) %>%
+  mutate(
+    Percentage = n / sum(n) * 100,
+    Label = paste0(gender, "\n", round(Percentage, 1), "%")
+  )
+
+# race
+race_data <- sepsis_demographics %>%
+  count(race_simple) %>%
+  mutate(
+    Percentage = n / sum(n) * 100,
+    Label = paste0(race_simple, "\n", round(Percentage, 1), "%")
+  )
+
+# age
+age_data <- sepsis_demographics %>%
+  count(age_group) %>%
+  mutate(
+    Percentage = n / sum(n) * 100,
+    Label = paste0(age_group, "\n", round(Percentage, 1), "%")
+  )
+
+# viz
+
+
+# Prevalence Plot
+prev_data <- prev_data %>%
+  mutate(Legend_Label = paste0(Category, " (", round(Percentage, 1), "%)"))
+
+p_prev <- ggplot(prev_data, aes(x = "", y = Count, fill = Legend_Label)) +
+  geom_bar(stat = "identity", width = 1) +
+  coord_polar("y", start = 0) +
+  theme_void() +
+  scale_fill_brewer(palette = "Pastel1") +
+  labs(title = "Sepsis Prevalence", fill = "Category") + # Set legend title
+  theme(legend.position = "right", plot.title = element_text(hjust = 0.5))
+
+# Gender Plot
+gender_data <- gender_data %>%
+  mutate(Legend_Label = paste0(gender, " (", round(Percentage, 1), "%)"))
+
+p_gender <- ggplot(gender_data, aes(x = "", y = n, fill = Legend_Label)) +
+  geom_bar(stat = "identity", width = 1) +
+  coord_polar("y", start = 0) +
+  theme_void() +
+  scale_fill_brewer(palette = "Set2") +
+  labs(title = "Gender Distribution", fill = "Gender") +
+  theme(legend.position = "right", plot.title = element_text(hjust = 0.5))
+
+# Race Plot
+race_data <- race_data %>%
+  mutate(Legend_Label = paste0(race_simple, " (", round(Percentage, 1), "%)"))
+
+p_race <- ggplot(race_data, aes(x = "", y = n, fill = Legend_Label)) +
+  geom_bar(stat = "identity", width = 1) +
+  coord_polar("y", start = 0) +
+  theme_void() +
+  scale_fill_brewer(palette = "Set3") +
+  labs(title = "Racial Distribution", fill = "Race") +
+  theme(legend.position = "right", plot.title = element_text(hjust = 0.5))
+
+# Age Plot
+age_order <- c("<40", "40-60", "60-80", "80+", "Unknown")
+age_data <- sepsis_demographics %>%
+  count(age_group) %>%
+  mutate(
+    Percentage = n / sum(n) * 100,
+    age_group = factor(age_group, levels = age_order),
+    # Create the label
+    Legend_Label = paste0(age_group, " (", round(Percentage, 1), "%)")
+  ) %>%
+  filter(!is.na(age_group)) %>% 
+  arrange(age_group)
+
+age_data$Legend_Label <- factor(age_data$Legend_Label, 
+                                levels = age_data$Legend_Label)
+
+p_age <- ggplot(age_data, aes(x = "", y = n, fill = Legend_Label)) +
+  geom_bar(stat = "identity", width = 1) +
+  coord_polar("y", start = 0) +
+  theme_void() +
+  scale_fill_brewer(palette = "OrRd") +
+  labs(title = "Age Distribution", fill = "Age Group") +
+  theme(legend.position = "right", plot.title = element_text(hjust = 0.5))
+
+grid.arrange(p_prev, p_gender, p_race, p_age, ncol = 2)
+```
+
+As shown in the plot, the initial cohort characterization identified a high prevalence of sepsis (53.2%) within the study sample, with a demographic distribution heavily skewed towards elderly patients (64% aged \> 60) and white (66.6%). This distinct profile calls for a more comprehensive confounding analysis in later stages. Next, we will define and build "Time-to-Antibiotics" (TTA) as a continuous variable, and several metrics for "improved outcomes".
+
+### Feature Engineering
+
+#### Defining Time-To-Antibiotics (TTA)
+
+Time-To-Antibiotics was defined as the temporal difference in hours between the first systemic antibiotic administration and the confirmed sepsis onset. We identified the earliest antibiotic event within a window of -48 to +24 hours relative to onset. Note that we retained negative TTA values (antibiotics administered before the SOFA score threshold was met) to capture pre-emptive clinical care; as excluding these early recognizers would introduce immortal time bias by artificially selecting for patients with delayed progression.
+
+```{r}
+
+# extract antibiotic events using regex from prescriptions table
+antibiotic_events <- prescriptions %>%
+  filter(
+    str_detect(
+      tolower(drug),
+      "penicillin|ampicillin|amoxicillin|cef|ceph|meropenem|imipenem|
+       vanco|piperacillin|tazobactam|azithro|levofloxacin|cipro|
+       clinda|metronidazole|linezolid|ertapenem|trimethoprim|sulfa"
+    )
+  ) %>%
+  select(subject_id, hadm_id, antibiotic_time = starttime)
+
+# calculate TTA: associate first antibiotic administered within [-48h, +24h] of the onset. Negative TTA values preserved to indicate pre-emptive treatment
+tta_cohort <- sepsis_onset %>%
+  left_join(antibiotic_events, by = c("subject_id", "hadm_id")) %>%
+  mutate(
+    diff_time = as.numeric(difftime(antibiotic_time, sepsis_onset_time, units = "hours"))
+  ) %>%
+  # scope down search by filtering time window
+  filter(diff_time >= -48 & diff_time <= 24) %>%
+  # leave earliest timestamp
+  group_by(subject_id, hadm_id) %>%
+  arrange(diff_time) %>%
+  slice(1) %>%
+  ungroup() %>%
+  mutate(
+    tta_hours = diff_time,
+    # Binary Cohorts for later analysis:
+    # "Early Treatment" defined as <= 1 hour after onse
+    early_tx_1h = ifelse(tta_hours <= 1, 1, 0),
+    early_tx_3h = ifelse(tta_hours <= 3, 1, 0)
+  ) %>%
+  select(subject_id, hadm_id, stay_id, sepsis_onset_time, first_abx_time = antibiotic_time, tta_hours, early_tx_1h, early_tx_3h)
+```
+
+#### Defining Improved Outcomes
+
+Patient outcomes were derived by linking the cohort to admissions, icustays, and procedureevents tables. We defined In-hospital Mortality and 28-day Mortality using discharge flags and death timestamps. ICU Length of Stay (LOS) was calculated as the duration between unit admission and discharge. Finally, we calculated Ventilator-Free Days where survivors were assigned 28 - days on ventilator, while non-survivors within 28 days were penalized heavily with a score of 0.
+
+```{r}
+# quickly check itemid matches invasive ventilation
+check_id <- d_items %>%
+  filter(itemid == 225792) %>%
+  select(itemid, label, abbreviation, linksto)
+check_id
+```
+
+```{r}
+# construct ventilation duration column
+vent_durations <- procedureevents %>%
+  filter(itemid == 225792) %>% 
+  mutate(
+    duration_mins = as.numeric(difftime(endtime, starttime, units = "mins"))
+  ) %>% 
+  group_by(subject_id, stay_id) %>%
+  summarise(
+    # convert total_vent_days_calc (in minutes) to days
+    total_vent_days_calc = sum(duration_mins, na.rm = TRUE) / 1440,
+    .groups = "drop"
+  )
+
+analytic_cohort <- tta_cohort %>%
+  left_join(admissions %>% select(subject_id, hadm_id, hospital_expire_flag, deathtime, admittime), 
+            by = c("subject_id", "hadm_id")) %>%
+  # join ICU LOS Data
+  left_join(icustays %>% select(subject_id, hadm_id, stay_id, intime, outtime), 
+            by = c("subject_id", "hadm_id", "stay_id")) %>%
+  # join Ventilation Data
+  left_join(vent_durations %>% select(stay_id, total_vent_days_calc), by = "stay_id") %>%
+  mutate(
+    # 1. Mortality
+    mortality_hosp = as.numeric(hospital_expire_flag),
+    # 2. LOS
+    los_icu_days = as.numeric(difftime(outtime, intime, units = "days")),
+    # 3. 28-Day Mortality Flag
+    days_to_death = as.numeric(difftime(deathtime, admittime, units = "days")),
+    mortality_28d = ifelse(!is.na(days_to_death) & days_to_death <= 28, 1, 0),
+    # 4. VFD-28
+    # extra logic applied to penalize death:
+    # if died within 28 days / days on vnet > 28 -> 0
+    # if survived > 28 days > 28
+    # if never ventilated > 28
+    vent_days_imputed = replace_na(total_vent_days_calc, 0),
+    vfd_28 = case_when(
+      mortality_28d == 1 ~ 0,
+      vent_days_imputed >= 28 ~ 0,
+      TRUE ~ 28 - vent_days_imputed
+    )
+  ) %>%
+  select(subject_id, hadm_id, stay_id, tta_hours, early_tx_1h, early_tx_3h, 
+         mortality_hosp, mortality_28d, los_icu_days, vfd_28)
+
+# quick summary on Y variables
+# continuous var
+analytic_cohort %>%
+  select(tta_hours, los_icu_days, vfd_28) %>%
+  summary() %>%
+  print()
+
+# categorical vars
+analytic_cohort %>%
+  select(early_tx_1h, mortality_hosp, mortality_28d) %>%
+  mutate(across(everything(), as.factor)) %>%
+  summary() %>%
+  print()
+```
+
+```{r}
+
+# LOS
+p_los <- ggplot(analytic_cohort, aes(x = los_icu_days)) +
+  geom_histogram(bins = 30, fill = "steelblue", color = "white", alpha = 0.8) +
+  labs(title = "ICU Length of Stay (Days)", x = "Days", y = "Count") +
+  theme_minimal()
+
+# VFD-28
+p_vfd <- ggplot(analytic_cohort, aes(x = vfd_28)) +
+  geom_histogram(binwidth = 1, fill = "seagreen", color = "white", alpha = 0.8) +
+  labs(title = "Ventilator-Free Days (VFD-28)", x = "Days (Max 28)", y = "Count") +
+  theme_minimal()
+
+# In-hospital Mortality
+p_mort <- analytic_cohort %>%
+  count(mortality_hosp) %>%
+  mutate(pct = n / sum(n)) %>%
+  ggplot(aes(x = factor(mortality_hosp), y = n, fill = factor(mortality_hosp))) +
+  geom_col(alpha = 0.8, show.legend = FALSE) +
+  scale_y_continuous(expand = expansion(mult = c(0, 0.15))) +
+  geom_text(aes(label = percent(pct)), vjust = -0.5) +
+  scale_x_discrete(labels = c("Survivor", "Non-Survivor")) +
+  scale_fill_manual(values = c("gray50", "firebrick")) +
+  labs(title = "In-Hospital Mortality", x = "", y = "Count") +
+  theme_minimal()
+
+# Early treatment (< 1h)
+p_early <- analytic_cohort %>%
+  count(early_tx_1h) %>%
+  mutate(pct = n / sum(n)) %>%
+  ggplot(aes(x = factor(early_tx_1h), y = n, fill = factor(early_tx_1h))) +
+  geom_col(alpha = 0.8, show.legend = FALSE) +
+  scale_y_continuous(expand = expansion(mult = c(0, 0.15))) +
+  geom_text(aes(label = percent(pct)), vjust = -0.5) +
+  scale_x_discrete(labels = c("Delayed (>1h)", "Early (<=1h)")) +
+  scale_fill_manual(values = c("gray50", "dodgerblue")) +
+  labs(title = "Treatment Timing Group", x = "", y = "Count") +
+  theme_minimal()
+
+grid.arrange(p_los, p_vfd, p_mort, p_early, ncol = 2)
+```
+
+Based on the plots and summary statistics, the data shows several expected distribution patterns. The LOS is heavily right-skewed with a median of 2.7 days, indicating that while most patients have short stays, a certain amount of variance of long-tail of outliers exist and we might consider using log-transformation for later modeling. VFD-28 shows a sparse contrast with peak at both sides (0 for non-survivors and prolonged ventilation) and 28 (never ventilated). In-hospital mortality rate is observed to be 15%, while the treatment timing group shows balanced split on delayed and early administration.
+
+There are several key notes proceeding to the next stage. Firstly, LOS has long tail, hence we might consider using log-transformation for modeling. Secondly, VFD-28 should be treated more as ordinary or binary variables, but since we are using the MIMIC-IV demo, later analysis on the entire dataset is needed. In-hospital mortality rate is quite unbalanced as a y variable, hence we might consider regularization when doing logistic regression on it, or more advanced methods to rebalance the sample.
+
+#### Data Quality, Preprocessing, and Feature Engineering
+
+As of now, the ingredients needed for Confounding analysis and later modeling is almost complete. In this section, I would construct and retrieve features needed, and conduct a data quality audit to check for outliers and impute. Finally, I would apply log0transofrmation to address the long-tail outliers problems mentioned in last section.
+
+Firstly, we pull all data columns that we plan to audit, and fetch lactate (for Septic Shock vs. Stable Sepsis confounding analysis), and calculate Charlson Comorbidity Index.
+
+```{r}
+# Fetch Lactate (Crucial for Septic Shock Definition)
+# itemid 50813 is Lactate
+lactate_events <- labevents %>%
+  semi_join(sepsis_onset, by = c("subject_id", "hadm_id")) %>%
+  filter(itemid == 50813) %>%
+  select(subject_id, hadm_id, charttime, lactate_val = valuenum) %>%
+  filter(lactate_val < 50)
+
+# Link Lactate to the Sepsis Onset window [-6h, +24h]
+# We take the MAX lactate in this window to capture the "worst" state
+lactate_merged <- sepsis_onset %>%
+  left_join(lactate_events, by = c("subject_id", "hadm_id")) %>%
+  mutate(
+    diff_hours = as.numeric(difftime(charttime, sepsis_onset_time, units = "hours"))
+  ) %>%
+  filter(diff_hours >= -6 & diff_hours <= 24) %>%
+  group_by(subject_id, hadm_id) %>%
+  summarise(
+    max_lactate = max(lactate_val, na.rm = TRUE),
+    .groups = "drop"
+  ) %>%
+  # Handle cases where no lactate was drawn (Inf warnings from max)
+  mutate(max_lactate = ifelse(is.infinite(max_lactate), NA, max_lactate))
+
+
+# Calculate Charlson Comorbidity Index (CCI)
+# We use a simplified mapping for the demo based on ICD codes in diagnoses_icd
+# (In a full production scale, we would use the 'comorbidity' R package)
+
+charlson_map <- diagnoses_icd %>%
+  semi_join(sepsis_onset, by = c("subject_id", "hadm_id")) %>%
+  mutate(
+    # Simple regex for major Charlson components
+    mi = as.integer(str_detect(icd_code, "^410|^412|^I21|^I22")),
+    chf = as.integer(str_detect(icd_code, "^428|^I50")),
+    pvd = as.integer(str_detect(icd_code, "^441|^443|^I71|^I73")),
+    cvd = as.integer(str_detect(icd_code, "^430|^438|^I60|^I69")),
+    dementia = as.integer(str_detect(icd_code, "^290|^F00|^F03")),
+    copd = as.integer(str_detect(icd_code, "^490|^496|^J40|^J44")),
+    rheum = as.integer(str_detect(icd_code, "^710|^714|^M05|^M06")),
+    liver_mild = as.integer(str_detect(icd_code, "^571|^K70|^K73")),
+    diabetes = as.integer(str_detect(icd_code, "^250|^E10|^E14")),
+    renal = as.integer(str_detect(icd_code, "^585|^N18")),
+    malignancy = as.integer(str_detect(icd_code, "^196|^199|^C77|^C80"))
+  ) %>%
+  group_by(subject_id, hadm_id) %>%
+  summarise(
+    # Simple unweighted sum for this demo (CCI usually weighted)
+    charlson_index = max(mi) + max(chf) + max(pvd) + max(cvd) + max(dementia) + 
+                     max(copd) + max(rheum) + max(liver_mild) + max(diabetes) + 
+                     max(renal) + max(malignancy),
+    .groups = "drop"
+  )
+
+# Join these new features back to the main analytic_cohort
+analytic_cohort_ext <- analytic_cohort %>%
+  left_join(lactate_merged, by = c("subject_id", "hadm_id")) %>%
+  left_join(charlson_map, by = c("subject_id", "hadm_id"))
+```
+
+Then, I check for outliers and missingness in Lactate, due since it is usually recorded in low frequency.
+
+```{r}
+# Missingness Assessment
+missing_summary <- analytic_cohort_ext %>%
+  summarise(
+    missing_lactate = sum(is.na(max_lactate)),
+    pct_missing_lactate = mean(is.na(max_lactate)) * 100,
+    missing_charlson = sum(is.na(charlson_index)),
+    # Baseline SOFA is in 'sepsis_onset' table, let's pull it in for checking
+    # (Checking if any patient failed to get a score)
+    n_total = n()
+  )
+
+print("Missingness Summary:")
+print(missing_summary)
+
+
+# Outlier Visualization
+# We check Lactate, LOS, and TTA for extreme outliers
+p_outlier_lactate <- ggplot(analytic_cohort_ext, aes(y = max_lactate)) + 
+  geom_boxplot(fill = "salmon", alpha = 0.5) +
+  labs(title = "Lactate Distribution", y = "mmol/L") + theme_minimal()
+
+p_outlier_los <- ggplot(analytic_cohort_ext, aes(y = los_icu_days)) + 
+  geom_boxplot(fill = "steelblue", alpha = 0.5) +
+  labs(title = "ICU LOS Distribution", y = "Days") + theme_minimal()
+
+p_outlier_tta <- ggplot(analytic_cohort_ext, aes(y = tta_hours)) + 
+  geom_boxplot(fill = "purple", alpha = 0.5) +
+  labs(title = "TTA Distribution", y = "Hours") + theme_minimal()
+
+grid.arrange(p_outlier_lactate, p_outlier_los, p_outlier_tta, ncol = 3)
+```
+
+Next, the final analytic cohort is constructed. We do a quick data exploratory analysis to better understand the confounders, and construct the table 1:
+
+```{r}
+# viz: distribution of TTA
+ggplot(analytic_cohort, aes(x = tta_hours)) +
+  geom_histogram(binwidth = 1, fill = "coral", color = "white", alpha = 0.8) +
+  geom_vline(xintercept = 0, linetype = "dashed", color = "black", size = 1) +
+  geom_vline(xintercept = 1, linetype = "dotted", color = "blue", size = 1) +
+  annotate("text", x = -10, y = 5, label = "Pre-emptive", color = "gray30") +
+  annotate("text", x = 10, y = 5, label = "Delayed", color = "gray30") +
+  labs(
+    title = "Distribution of Time-to-Antibiotics (TTA)",
+    subtitle = "Relative to Sepsis Onset",
+    x = "Hours (Antibiotics Time - Sepsis Onset Time)",
+    y = "Count of Patients"
+  ) +
+  theme_minimal()
+```
+
+As shown in the histogram, the peak sits around 0 to +2 hours, which is expected as for most patients, clinical team quickly starts administer antibiotics as soon as there's a sign of organ failure. There are also healthy amount of variance, where some were identified to receive pre-emptive treatment before SOFA score spiked, and some received delayed treatment up to 25h.
+
+```{r}
+vaso_flag <- inputevents %>%
+  inner_join(sepsis_onset %>% select(subject_id, stay_id, hadm_id, sepsis_onset_time), 
+             by = c("subject_id", "stay_id")) %>%
+  mutate(
+    time_diff = as.numeric(difftime(starttime, sepsis_onset_time, units = "hours"))
+  ) %>%
+  filter(time_diff >= -6 & time_diff <= 24) %>%
+  distinct(subject_id, hadm_id) %>%
+  mutate(vaso_active = 1)
+
+analytic_final <- analytic_cohort_ext %>%
+  left_join(vaso_flag, by = c("subject_id", "hadm_id")) %>%
+  left_join(patients %>% select(subject_id, anchor_age, gender), by = "subject_id") %>%
+  left_join(sepsis_onset %>% select(subject_id, hadm_id, first_sofa_score), 
+            by = c("subject_id", "hadm_id")) %>%
+  mutate(
+    log_los = log(los_icu_days + 0.1),
+    good_outcome_vfd = ifelse(vfd_28 > 20, 1, 0),
+
+    vaso_active = replace_na(vaso_active, 0),
+    max_lactate_imp = replace_na(max_lactate, 1.0),
+    
+    septic_shock_numeric = ifelse(vaso_active == 1 & max_lactate_imp > 2.0, 1, 0),
+    charlson_index = replace_na(charlson_index, 0)
+  )
+
+
+analytic_final$septic_shock_factor <- factor(analytic_final$septic_shock_numeric, 
+                                             levels = c(0, 1), labels = c("No Shock", "Septic Shock"))
+analytic_final$mortality_factor <- factor(analytic_final$mortality_hosp, 
+                                          levels = c(0, 1), labels = c("Survivor", "Non-Survivor"))
+analytic_final$gender_factor <- factor(analytic_final$gender, 
+                                       levels = c("F", "M"), labels = c("Female", "Male"))
+analytic_final$timing_group <- factor(analytic_final$early_tx_1h, 
+                                      levels = c(1, 0), labels = c("Early Tx (<=1h)", "Delayed Tx (>1h)"))
+
+label(analytic_final$anchor_age) <- "Age"
+label(analytic_final$gender_factor) <- "Gender"
+label(analytic_final$charlson_index) <- "Charlson Comorbidity Index"
+label(analytic_final$first_sofa_score) <- "Baseline SOFA Score"
+label(analytic_final$max_lactate_imp) <- "Lactate (max in 24h)"
+label(analytic_final$septic_shock_factor) <- "Septic Shock (Sepsis-3)"
+label(analytic_final$mortality_factor) <- "In-Hospital Mortality"
+
+table1(~ anchor_age + gender_factor + charlson_index + first_sofa_score + 
+         max_lactate_imp + septic_shock_factor + mortality_factor | timing_group, 
+       data = analytic_final,
+       caption = "Table 1: Baseline Characteristics Stratified by Treatment Timing")
+```
+
+Table 1 provides rich insights. Firstly, as many would assume "sicker patient would be treated first", the statistics show otherwise: in Septic Shock group, more receives delayed treatment (15.9%) rather than early treatment (10.5%). In Lactate group, it shows 2.38 in delayed vs. 2.13 in early. It results in larger probability of death in delayed group (14.5%) vs. early group (11.2%). However, since delayed group often started off with worse hemodynamics, we cannot make the conclusion yet.
+
+### Modeling and Results
+
+#### Primary Models
+
+To isolate the effect of antibiotic timing on survival, we fitted a multivariable logistic regression model predicting in-hospital mortality. The model adjusted for illness severity proxied by first SOFA score and septic shock status, comorbidities for chronic conditions, and age. Given the large sample size of the cohort, we utilized the full dataset without resampling despite the observed class imbalance.
+
+**Primary: logistic regression to predict death**
+
+```{r}
+
+model_mortality <- glm(mortality_hosp ~ tta_hours + anchor_age + first_sofa_score + 
+                         charlson_index + septic_shock_numeric, 
+                       data = analytic_final, 
+                       family = binomial(link = "logit"))
+```
+
+```{r}
+# viz
+y_pred <- predict(model_mortality, type = "response")
+y_true <- analytic_final$mortality_hosp
+
+# model performance
+model_perf <- tibble(prob = y_pred, truth = y_true) %>%
+  arrange(desc(prob)) %>%
+  mutate(
+    TP = cumsum(truth == 1),
+    FP = cumsum(truth == 0),
+    Total_Pos = sum(truth == 1),
+    Total_Neg = sum(truth == 0),
+    
+    TPR = TP / Total_Pos,
+    FPR = FP / Total_Neg,
+    Precision = TP / (TP + FP)
+  )
+
+auc_val <- sum(diff(model_perf$FPR) * (head(model_perf$TPR, -1) + tail(model_perf$TPR, -1))) / 2
+print(paste("Calculated AUROC:", round(auc_val, 3)))
+
+# 4. Plot ROC Curve
+p_roc <- ggplot(model_perf, aes(x = FPR, y = TPR)) +
+  geom_line(color = "dodgerblue", size = 1) +
+  geom_abline(intercept = 0, slope = 1, linetype = "dashed", color = "gray") +
+  annotate("text", x = 0.75, y = 0.25, label = paste("AUC =", round(auc_val, 3)), size = 5) +
+  labs(
+    title = "ROC Curve",
+    subtitle = "Mortality Prediction",
+    x = "False Positive Rate (1 - Specificity)",
+    y = "True Positive Rate (Sensitivity)"
+  ) +
+  theme_minimal()
+
+baseline_prevalence <- sum(y_true == 1) / length(y_true)
+
+p_pr <- ggplot(model_perf, aes(x = TPR, y = Precision)) +
+  geom_line(color = "firebrick", size = 1) +
+  geom_hline(yintercept = baseline_prevalence, linetype = "dashed", color = "gray") +
+  labs(
+    title = "Precision-Recall Curve",
+    subtitle = paste("Baseline Prevalence =", percent(baseline_prevalence)),
+    x = "Recall (Sensitivity)",
+    y = "Precision (PPV)"
+  ) +
+  theme_minimal()
+
+grid.arrange(p_roc, p_pr, ncol = 2)
+
+# viz: OR
+results_table <- exp(cbind(OR = coef(model_mortality), confint(model_mortality))) %>%
+  as.data.frame() %>%
+  rownames_to_column(var = "Term") %>%
+  rename(Lower_CI = `2.5 %`, Upper_CI = `97.5 %`) %>%
+  filter(Term != "(Intercept)")
+
+print("Adjusted Odds Ratios for In-Hospital Mortality:")
+print(results_table)
+
+ggplot(results_table, aes(x = OR, y = Term)) +
+  geom_vline(xintercept = 1, linetype = "dashed", color = "gray50") +
+  geom_errorbarh(aes(xmin = Lower_CI, xmax = Upper_CI), height = 0.2, color = "black") +
+  geom_point(size = 3, color = "firebrick") +
+  scale_x_log10() + # Log scale is standard for OR plots
+  labs(
+    title = "Multivariable Analysis: Predictors of Mortality",
+    subtitle = "Adjusted Odds Ratios (95% CI)",
+    x = "Odds Ratio (log scale)",
+    y = ""
+  ) +
+  theme_minimal() +
+  theme(panel.grid.minor = element_blank())
+```
+
+The model shows moderate explainability, with AURC of 0.655. The class is extremely imbalanced, with mortality rate of 13%. However, since the cohort is big, I decide not to use resampling as the model has sufficient data to capture enough information.
+
+The Adjusted Odds Ratio plot has confirmed our hypothesis for confounding variable. The septic shock value is far to the right, indicating that patients with septic shock at onset have 2.5x higher odds of death compared to those without even after adjusting everything else. Since time-to-antibiotic hours sits in the far left, it shows that there is no statistically significant association between delay and mortality. Later on, a sensitivity analysis would be conducted to further explore this phenomenon.
+
+**secondary A: linear regression to predict LOS**
+
+The primary model demonstrated moderate discriminative ability and calls for further analysis; but before that, we subsequently examine the impact of treatment delays on resource utilization, specifically ICU Length of Stay. Since LOS data is typically right-skewed as aforementioned, a log-transformation was applied.
+
+```{r}
+model_los <- lm(log_los ~ tta_hours + anchor_age + first_sofa_score + 
+                  charlson_index + septic_shock_numeric, 
+                data = analytic_final)
+
+print("Model 2 Results: ICU Length of Stay (Linear Regression)")
+summary(model_los)
+```
+
+The model output shows again that timing of the first antibiotic administration is not the primary driver of length of stay. Our tta_hours has p value of 0.857, showing that there is no statistically significant association between antibiotic delay and ICU length of stay. On the other hand, nearly all other predictors are statistically significant.
+
+**secondary B: Logistic Regression to predict Ventilator-Free Days**
+
+Lastly, we examine the association between TTA and VFD-28.
+
+```{r}
+analytic_final <- analytic_final %>%
+  mutate(good_outcome_vfd = ifelse(vfd_28 > 20, 1, 0))
+
+model_vfd <- glm(good_outcome_vfd ~ tta_hours + anchor_age + first_sofa_score + 
+                   charlson_index + septic_shock_numeric, 
+                 data = analytic_final, 
+                 family = binomial(link = "logit"))
+```
+
+```{r}
+y_pred <- predict(model_vfd, type = "response")
+y_true <- analytic_final$good_outcome_vfd
+
+model_perf <- tibble(prob = y_pred, truth = y_true) %>%
+  arrange(desc(prob)) %>%
+  mutate(
+    TP = cumsum(truth == 1),
+    FP = cumsum(truth == 0),
+    Total_Pos = sum(truth == 1),
+    Total_Neg = sum(truth == 0),
+    
+    TPR = TP / Total_Pos,
+    FPR = FP / Total_Neg,
+    Precision = TP / (TP + FP)
+  )
+
+auc_val <- sum(diff(model_perf$FPR) * (head(model_perf$TPR, -1) + tail(model_perf$TPR, -1))) / 2
+print(paste("Calculated AUROC (VFD Model):", round(auc_val, 3)))
+
+p_roc <- ggplot(model_perf, aes(x = FPR, y = TPR)) +
+  geom_line(color = "dodgerblue", size = 1) +
+  geom_abline(intercept = 0, slope = 1, linetype = "dashed", color = "gray") +
+  annotate("text", x = 0.75, y = 0.25, label = paste("AUC =", round(auc_val, 3)), size = 5) +
+  labs(
+    title = "ROC Curve",
+    x = "False Positive Rate (1 - Specificity)",
+    y = "True Positive Rate (Sensitivity)"
+  ) +
+  theme_minimal()
+
+baseline_prevalence <- sum(y_true == 1) / length(y_true)
+
+p_pr <- ggplot(model_perf, aes(x = TPR, y = Precision)) +
+  geom_line(color = "firebrick", size = 1) +
+  geom_hline(yintercept = baseline_prevalence, linetype = "dashed", color = "gray") +
+  labs(
+    title = "Precision-Recall Curve",
+    x = "Recall (Sensitivity)",
+    y = "Precision (PPV)"
+  ) +
+  theme_minimal()
+
+grid.arrange(p_roc, p_pr, ncol = 2)
+
+results_table <- exp(cbind(OR = coef(model_vfd), confint(model_vfd))) %>%
+  as.data.frame() %>%
+  rownames_to_column(var = "Term") %>%
+  rename(Lower_CI = `2.5 %`, Upper_CI = `97.5 %`) %>%
+  filter(Term != "(Intercept)")
+
+print("Adjusted Odds Ratios for Good Ventilator Outcome:")
+print(results_table)
+
+ggplot(results_table, aes(x = OR, y = Term)) +
+  geom_vline(xintercept = 1, linetype = "dashed", color = "gray50") +
+  geom_errorbarh(aes(xmin = Lower_CI, xmax = Upper_CI), height = 0.2, color = "black") +
+  geom_point(size = 3, color = "seagreen") + # Changed color to green for "Good Outcome"
+  scale_x_log10() + 
+  labs(
+    title = "Logistic Regression: Predictors of VFD-28",
+    subtitle = "Ventilator-Free Days > 28 (Adjusted OR 95% CI)",
+    x = "Odds Ratio (log scale)\n< 1 = Harmful | > 1 = Beneficial",
+    y = ""
+  ) +
+  theme_minimal() +
+  theme(panel.grid.minor = element_blank())
+```
+
+The model shows that time-to-antibiotics is a significant predictor of morbidity with aOR of 0.995 on 95% confidence interval. While the effect size per hour was small, 0.5% reduction in odds of a favorable outcome per hour, the statistical significance confirms that treatment delays cumulatively reduce the likelihood of ventilator-free recovery. On the other hands, other predictors are also shown to be significant: septic shock reduce the odds of favorable outcome by 67%, and each point of baseline SOFA reduced the odds by 12%.
+
+#### Sensitivity Analysis
+
+Sensitivity analysis is performed using a binary definition of treatment timing to capture the non-linear relationship between tta and mortality. Clinically, it is aligned to the concept of "Golden Hour" which is to say whether there is a "cliff" that distinguishes early treatment and delayed treatment in terms of improved outcom.e
+
+```{r}
+model_sens_binary <- glm(mortality_hosp ~ early_tx_1h + anchor_age + first_sofa_score + 
+                           charlson_index + septic_shock_numeric, 
+                         data = analytic_final, 
+                         family = binomial(link = "logit"))
+
+print(exp(cbind(OR = coef(model_sens_binary), confint(model_sens_binary))))
+```
+
+```{r}
+
+results_sens <- exp(cbind(OR = coef(model_sens_binary), confint(model_sens_binary))) %>%
+  as.data.frame() %>%
+  rownames_to_column(var = "Term") %>%
+  rename(Lower_CI = `2.5 %`, Upper_CI = `97.5 %`) %>%
+  filter(Term != "(Intercept)")
+
+results_sens$Term <- factor(results_sens$Term, 
+                            levels = c("early_tx_1h", "septic_shock_numeric", 
+                                       "first_sofa_score", "charlson_index", "anchor_age"),
+                            labels = c("Early Tx (<1h) vs Delayed", "Septic Shock", 
+                                       "Baseline SOFA", "Comorbidities", "Age"))
+
+ggplot(results_sens, aes(x = OR, y = Term)) +
+  geom_vline(xintercept = 1, linetype = "dashed", color = "gray50") +
+  geom_errorbarh(aes(xmin = Lower_CI, xmax = Upper_CI), height = 0.2, color = "black") +
+  geom_point(aes(color = OR < 1), size = 4) + 
+  scale_color_manual(values = c("firebrick", "dodgerblue"), labels = c("Risk Factor", "Protective")) +
+  scale_x_log10(breaks = c(0.5, 0.75, 1.0, 1.5, 2.0, 3.0)) + 
+  labs(
+    title = "Early (<1h) vs. Dealyed Administration",
+    x = "Odds Ratio (log scale)",
+    y = "",
+    color = "Effect"
+  ) +
+  theme_minimal() +
+  theme(legend.position = "bottom",
+        panel.grid.minor = element_blank(),
+        plot.title = element_text(face = "bold"))
+```
+
+#### Threshold Analysis
+
+In contrast to the primary linear model, the binary sensitivity analysis revealed a strong and statistically significant effect of early administration. Adherence to the 1-hour antibiotic bundle was associated with a 22% reduction in the odds of in-hospital mortality, compared to delayed administration.
+
+```{r}
+cutoffs <- seq(0.5, 6.0, by = 0.5)
+run_threshold_model <- function(cut_time) {
+  temp_data <- analytic_final %>%
+    mutate(early_tx_dynamic = ifelse(tta_hours <= cut_time, 1, 0))
+  model <- glm(mortality_hosp ~ early_tx_dynamic + anchor_age + first_sofa_score + 
+                 charlson_index + septic_shock_numeric, 
+               data = temp_data, 
+               family = binomial(link = "logit"))
+  res <- tidy(model, conf.int = TRUE, exponentiate = TRUE) %>%
+    filter(term == "early_tx_dynamic") %>%
+    mutate(cutoff_hour = cut_time) %>%
+    select(cutoff_hour, estimate, conf.low, conf.high, p.value)
+  
+  return(res)
+}
+
+
+threshold_results <- map_dfr(cutoffs, run_threshold_model)
+
+print(threshold_results)
+
+
+ggplot(threshold_results, aes(x = cutoff_hour, y = estimate)) +
+  geom_hline(yintercept = 1, linetype = "dashed", color = "gray50") +
+  geom_ribbon(aes(ymin = conf.low, ymax = conf.high), fill = "dodgerblue", alpha = 0.2) +
+  geom_line(color = "dodgerblue", size = 1.2) +
+  geom_point(size = 3, color = "dodgerblue") +
+  geom_text(aes(label = round(estimate, 3)), vjust = -1.5, size = 3.5) +
+  scale_x_continuous(breaks = cutoffs) +
+  coord_cartesian(ylim = c(0.6, 1.1)) + 
+  labs(
+    title = "Antibiotic Timing vs. Mortality",
+    subtitle = "Adjusted Odds Ratio for varying cutoffs at time to antibiotic",
+    x = "Definition of 'Early' (Hours from Sepsis Onset)",
+    y = "Adjusted Odds Ratio (Protective Effect)"
+  ) +
+  theme_minimal()
+```
+
+The threshold trajectory plot confirms that the protective effect of antibiotics is time-dependent and non-linear. The 1-hour cutoff represented the global optimum, yielding the strongest protective effect (lowest Odds Ratio). As the definition of "early" delays, the protective effect gradually decreases with the odds ratio trending back toward 1.0.
+
+## Conclusion
+
+The study utilized the MIMIC-IV dataset to examine the association between the timing of antibiotic administration and clinical outcomes in sepsis patients. Our analysis reveals a non-linear relationship between intervention speed and patient outcomes.
+
+When modeled as a continuous linear variable, time-to-antibiotics failed to demonstrate a statistically significant association with in-hospital mortality or ICU length of stay. This suggests that the risk of mortality does not increase uniformly with every passing hour of delay in the cohort; however, the sensitivity analysis using binary thresholds strongly supports the clinical relevance of the "Golden Hour". Patients receiving antibiotics within one hour of sepsis onset demonstrated a 22% reduction in the odds of mortality and significantly better ventilator-free outcomes compared to those treated later. In the follow-up threshold analysis, this finding is further reinforced as the definition of "early treatment" were delayed, the statistical signal decreases and trend back toward the null.
+
+Finally, our investigation also highlights a critical influence of confounding by indication. Descriptive analysis (Table 1) first revealed that patients in the "delayed" treatment group ironically presented with higher severity markers, including elevated lactate and a higher prevalence of septic shock. In our multivariable models, these severity metrics such as SOFA score and presence of shock remained the dominant predictors of mortality. This indicates that while rapid antibiotics are protective, the patient's baseline physiological state remains the primary driver of survival, which could be indicative for resource allocation and triage protocols.
+
+## Reference
+
+Singer, Mervyn, et al. “*T*he Third International Consensus Definitions for Sepsis and Septic Shock (Sepsis-3).” *JAMA*, vol. 315, no. 8, 2016, pp. 801–810, <https://doi.org/10.1001/jama.2016.0287>.
+
+Shan, Wenhong, et al. “Predicting Sepsis Onset in ICU Patients Using Machine Learning and Feature Selection: A Case Study of MIMIC-IV Data.” *2024 IEEE International Conference on Medical Artificial Intelligence (MedAI)*, IEEE, 2024, doi:10.1109/MedAI62885.2024.00077.
+
+Vincent, J. L., et al. “The SOFA (Sepsis-Related Organ Failure Assessment) Score to Describe Organ Dysfunction/Failure. On Behalf of the Working Group on Sepsis-Related Problems of the European Society of Intensive Care Medicine.” *Intensive Care Medicine*, vol. 22, no. 7, 1996, pp. 707–710, doi:10.1007/BF01709751.
+
+Wheeler, Derek S. “Is the ‘Golden Age’ of the ‘Golden Hour’ in Sepsis Over?” *Critical Care*, vol. 19, 2015, p. 447, doi:10.1186/s13054-015-1167-3.
+
+Forde, C., & Scullin, P. (2017). "Chasing the Golden Hour: Lessons learned from improving initial neutropenic sepsis management." *BMJ Quality Improvement Reports*, 6(1), u204420.w6531. <https://doi.org/10.1136/bmjquality.u204420.w6531>
+
+Johnson, Alistair E. W., et al. “The MIMIC Code Repository: Enabling Reproducibility in Critical Care Research.” *Journal of the American Medical Informatics Association*, vol. 25, no. 1, Jan. 2018, pp. 32–39, <https://doi.org/10.1093/jamia/ocx084>.
