@@ -1,0 +1,6 @@
+id.exposure	id.outcome	outcome	exposure	method	nsnp	b	se	pval
+ukb-b-3957	ieu-a-1188	Major Depressive Disorder || id:ieu-a-1188	Sleeplessness / insomnia || id:ukb-b-3957	Inverse variance weighted	32	0.704450401307799	0.207158490264225	0.00067253288821462
+ukb-b-3957	ieu-a-1188	Major Depressive Disorder || id:ieu-a-1188	Sleeplessness / insomnia || id:ukb-b-3957	Inverse variance weighted (fixed effects)	32	0.704450401307799	0.141293060440963	6.17252445659905e-07
+ukb-b-3957	ieu-a-1188	Major Depressive Disorder || id:ieu-a-1188	Sleeplessness / insomnia || id:ukb-b-3957	MR Egger	32	-0.0992637928758553	0.607550753885598	0.871312159112161
+ukb-b-3957	ieu-a-1188	Major Depressive Disorder || id:ieu-a-1188	Sleeplessness / insomnia || id:ukb-b-3957	Weighted median	32	0.368584864989956	0.233938359822062	0.115126311224312
+ukb-b-3957	ieu-a-1188	Major Depressive Disorder || id:ieu-a-1188	Sleeplessness / insomnia || id:ukb-b-3957	Simple median	32	0.94417892366674	0.23614343023783	6.37914722060194e-05

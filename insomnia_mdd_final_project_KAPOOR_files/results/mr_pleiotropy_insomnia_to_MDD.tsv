@@ -1,0 +1,2 @@
+id.exposure	id.outcome	outcome	exposure	egger_intercept	se	pval
+ukb-b-3957	ieu-a-1188	Major Depressive Disorder || id:ieu-a-1188	Sleeplessness / insomnia || id:ukb-b-3957	0.00960808041483505	0.00684141925145045	0.170469367861468

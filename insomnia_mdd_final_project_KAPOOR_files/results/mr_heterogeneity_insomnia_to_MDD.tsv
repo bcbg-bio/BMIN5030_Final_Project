@@ -1,0 +1,3 @@
+id.exposure	id.outcome	outcome	exposure	method	Q	Q_df	Q_pval
+ukb-b-3957	ieu-a-1188	Major Depressive Disorder || id:ieu-a-1188	Sleeplessness / insomnia || id:ukb-b-3957	MR Egger	62.5276913319446	30	0.000450247900434534
+ukb-b-3957	ieu-a-1188	Major Depressive Disorder || id:ieu-a-1188	Sleeplessness / insomnia || id:ukb-b-3957	Inverse variance weighted	66.6385447073324	31	0.000207477749043204
