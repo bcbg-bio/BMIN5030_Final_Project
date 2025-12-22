@@ -1,0 +1,35 @@
+exposure	outcome	id.exposure	id.outcome	samplesize	SNP	b	se	p
+Sleeplessness / insomnia || id:ukb-b-3957	Major Depressive Disorder || id:ieu-a-1188	ukb-b-3957	ieu-a-1188	173005	rs10838708	2.38520095899778	0.949711709734334	0.0120219285897351
+Sleeplessness / insomnia || id:ukb-b-3957	Major Depressive Disorder || id:ieu-a-1188	ukb-b-3957	ieu-a-1188	173005	rs11097861	0.159431285283312	0.866214642014397	0.853970172843976
+Sleeplessness / insomnia || id:ukb-b-3957	Major Depressive Disorder || id:ieu-a-1188	ukb-b-3957	ieu-a-1188	173005	rs11152363	1.68173127953297	0.658597251795157	0.010664479204871
+Sleeplessness / insomnia || id:ukb-b-3957	Major Depressive Disorder || id:ieu-a-1188	ukb-b-3957	ieu-a-1188	173005	rs113851554	0.183900239845063	0.382640518851993	0.630794858537136
+Sleeplessness / insomnia || id:ukb-b-3957	Major Depressive Disorder || id:ieu-a-1188	ukb-b-3957	ieu-a-1188	173005	rs11635495	-0.223803051607631	0.842808708027593	0.790590184931679
+Sleeplessness / insomnia || id:ukb-b-3957	Major Depressive Disorder || id:ieu-a-1188	ukb-b-3957	ieu-a-1188	173005	rs11790060	2.53442756139316	0.802777804644505	0.0015936183393324
+Sleeplessness / insomnia || id:ukb-b-3957	Major Depressive Disorder || id:ieu-a-1188	ukb-b-3957	ieu-a-1188	173005	rs12470989	1.92373253668395	0.946997432367787	0.0422142254465906
+Sleeplessness / insomnia || id:ukb-b-3957	Major Depressive Disorder || id:ieu-a-1188	ukb-b-3957	ieu-a-1188	173005	rs1327938	0.921646536478911	0.790156902584942	0.243448909770216
+Sleeplessness / insomnia || id:ukb-b-3957	Major Depressive Disorder || id:ieu-a-1188	ukb-b-3957	ieu-a-1188	173005	rs1430205	2.11069633232119	0.833779246917919	0.0113581966779215
+Sleeplessness / insomnia || id:ukb-b-3957	Major Depressive Disorder || id:ieu-a-1188	ukb-b-3957	ieu-a-1188	173005	rs1547630	0.164564883719398	0.922251963628139	0.858378933668839
+Sleeplessness / insomnia || id:ukb-b-3957	Major Depressive Disorder || id:ieu-a-1188	ukb-b-3957	ieu-a-1188	173005	rs17151854	0.300430354214623	0.885344090905592	0.734355577699353
+Sleeplessness / insomnia || id:ukb-b-3957	Major Depressive Disorder || id:ieu-a-1188	ukb-b-3957	ieu-a-1188	173005	rs17709610	-1.43204485634473	0.877361059287421	0.10263348788334
+Sleeplessness / insomnia || id:ukb-b-3957	Major Depressive Disorder || id:ieu-a-1188	ukb-b-3957	ieu-a-1188	173005	rs1988337	1.94368601903363	0.953827590893808	0.0415724396456869
+Sleeplessness / insomnia || id:ukb-b-3957	Major Depressive Disorder || id:ieu-a-1188	ukb-b-3957	ieu-a-1188	173005	rs2014830	1.37886362460997	0.758502990915203	0.0690832401469817
+Sleeplessness / insomnia || id:ukb-b-3957	Major Depressive Disorder || id:ieu-a-1188	ukb-b-3957	ieu-a-1188	173005	rs2062113	0.966711310854569	0.831879277679223	0.245202462863465
+Sleeplessness / insomnia || id:ukb-b-3957	Major Depressive Disorder || id:ieu-a-1188	ukb-b-3957	ieu-a-1188	173005	rs224032	2.31216614664401	1.0607032104745	0.0292691237928581
+Sleeplessness / insomnia || id:ukb-b-3957	Major Depressive Disorder || id:ieu-a-1188	ukb-b-3957	ieu-a-1188	173005	rs2604551	2.26444550303979	0.978676640521458	0.0206796210642082
+Sleeplessness / insomnia || id:ukb-b-3957	Major Depressive Disorder || id:ieu-a-1188	ukb-b-3957	ieu-a-1188	173005	rs314280	1.94545190623897	0.813290191205554	0.0167533751585642
+Sleeplessness / insomnia || id:ukb-b-3957	Major Depressive Disorder || id:ieu-a-1188	ukb-b-3957	ieu-a-1188	173005	rs324017	0.252657227740405	0.880345824125118	0.774114080445032
+Sleeplessness / insomnia || id:ukb-b-3957	Major Depressive Disorder || id:ieu-a-1188	ukb-b-3957	ieu-a-1188	173005	rs4572538	0.666298839470495	0.874457107878859	0.446085583252182
+Sleeplessness / insomnia || id:ukb-b-3957	Major Depressive Disorder || id:ieu-a-1188	ukb-b-3957	ieu-a-1188	173005	rs4577309	-2.33947449384851	0.924157116068285	0.0113586066501066
+Sleeplessness / insomnia || id:ukb-b-3957	Major Depressive Disorder || id:ieu-a-1188	ukb-b-3957	ieu-a-1188	173005	rs56093896	-1.00728380240269	0.773501140108451	0.192834497643589
+Sleeplessness / insomnia || id:ukb-b-3957	Major Depressive Disorder || id:ieu-a-1188	ukb-b-3957	ieu-a-1188	173005	rs56330606	-0.344263598200513	0.880837698134773	0.695918030367089
+Sleeplessness / insomnia || id:ukb-b-3957	Major Depressive Disorder || id:ieu-a-1188	ukb-b-3957	ieu-a-1188	173005	rs56365214	0.41901073350096	0.729986211371563	0.565969054419988
+Sleeplessness / insomnia || id:ukb-b-3957	Major Depressive Disorder || id:ieu-a-1188	ukb-b-3957	ieu-a-1188	173005	rs6690017	0.973987279509881	0.779203070060096	0.211307310022937
+Sleeplessness / insomnia || id:ukb-b-3957	Major Depressive Disorder || id:ieu-a-1188	ukb-b-3957	ieu-a-1188	173005	rs68094047	1.69278996865204	0.890127326908936	0.0572052674846972
+Sleeplessness / insomnia || id:ukb-b-3957	Major Depressive Disorder || id:ieu-a-1188	ukb-b-3957	ieu-a-1188	173005	rs6975972	2.31691472686034	0.920110058465789	0.0117995063807627
+Sleeplessness / insomnia || id:ukb-b-3957	Major Depressive Disorder || id:ieu-a-1188	ukb-b-3957	ieu-a-1188	173005	rs72924721	-1.48668527733948	0.970991625197233	0.125744679839419
+Sleeplessness / insomnia || id:ukb-b-3957	Major Depressive Disorder || id:ieu-a-1188	ukb-b-3957	ieu-a-1188	173005	rs7711696	0.0179007483261126	0.769809158938737	0.981448072572462
+Sleeplessness / insomnia || id:ukb-b-3957	Major Depressive Disorder || id:ieu-a-1188	ukb-b-3957	ieu-a-1188	173005	rs9845387	1.09366678562605	0.883044628068923	0.215524002104346
+Sleeplessness / insomnia || id:ukb-b-3957	Major Depressive Disorder || id:ieu-a-1188	ukb-b-3957	ieu-a-1188	173005	rs9894577	-0.14402087072419	0.65126352697064	0.824982882434169
+Sleeplessness / insomnia || id:ukb-b-3957	Major Depressive Disorder || id:ieu-a-1188	ukb-b-3957	ieu-a-1188	173005	rs9906181	2.27338895288221	1.09286512077252	0.0375062754241155
+Sleeplessness / insomnia || id:ukb-b-3957	Major Depressive Disorder || id:ieu-a-1188	ukb-b-3957	ieu-a-1188	173005	All - Inverse variance weighted	0.704450401307799	0.207158490264225	0.00067253288821462
+Sleeplessness / insomnia || id:ukb-b-3957	Major Depressive Disorder || id:ieu-a-1188	ukb-b-3957	ieu-a-1188	173005	All - MR Egger	-0.0992637928758553	0.607550753885598	0.871312159112161

@@ -1,19 +1,81 @@
-# BMIN5030 Final Project
+# Final Project: Causal Effects of Insomnia on Major Depressive Disorder  
+**BMIN5030 – Data Science for Biomedical Informatics**
 
-This repository contains templates for the final written report and GitHub repository. Follow the instructions below to clone this repository, and then turn in your final project's code via a pull request to this repository.
+**Author:** Ananya Kapoor  
 
-1. To start, **fork** this BMIN503_Final_Project repository.
-1. **Clone** the forked repository to your computer.
-1. Modify the files provided, add your own, and **commit** changes to complete your final project.
-1. **Push**/sync the changes up to your GitHub account.
-1. Create a **pull request** on this, the original BMIN503_Final_Project, repository to turn in your final project.
+---
 
+## Project Overview
 
-Follow the instructions [here][forking] if you are unsure what the above steps mean.
+This repository contains my final project for **BMIN5030: Data Science for Biomedical Informatics**.  
+The project uses **two-sample Mendelian randomization (MR)** to test whether **genetic liability to insomnia causally increases the risk of major depressive disorder (MDD)**.
 
-DUE DATE FOR FINAL VERSION: 12/12/25 11:59PM EST. This is a hard deadline. Turn in whatever you have by this date.
+Observational studies consistently report strong associations between sleep disturbances and depression, but these relationships are vulnerable to **confounding** and **reverse causation**. Mendelian randomization leverages genetic variants as instrumental variables to strengthen causal inference under well-defined assumptions.
 
+The analysis pairs genome-wide significant insomnia variants from **UK Biobank** with an independent **Psychiatric Genomics Consortium (PGC)** depression GWAS and applies multiple MR estimators and sensitivity analyses to assess robustness.
 
-<!-- Links -->
-[forking]: https://guides.github.com/activities/forking/
+---
 
+## Research Question
+
+> Does genetic liability to insomnia causally increase the risk of major depressive disorder?
+
+---
+
+## Data Sources
+
+All genetic summary statistics are accessed via **OpenGWAS**.
+
+### Exposure GWAS
+- **Trait:** Sleeplessness / insomnia  
+- **Cohort:** UK Biobank  
+- **OpenGWAS ID:** `ukb-b-3957`  
+- **Sample size:** ~460,000 individuals  
+
+### Outcome GWAS
+- **Trait:** Major Depressive Disorder (MDD)  
+- **Consortium:** Psychiatric Genomics Consortium (PGC)  
+- **OpenGWAS ID:** `ieu-a-1188`  
+- **Sample size:** ~170,000 individuals  
+
+The exposure and outcome GWAS are independent, satisfying the requirements of a two-sample MR design.
+
+---
+
+## Methods Summary
+
+### Instrument Construction and Data Cleaning
+- Genome-wide significant SNPs selected (p < 5×10⁻⁸)
+- LD clumping applied (r² < 0.001, 10 Mb window)
+- Allele harmonization performed across exposure and outcome
+- Palindromic SNPs with intermediate allele frequencies removed
+- Instrument strength evaluated using F-statistics (F > 10 threshold)
+
+### Mendelian Randomization Analyses
+- **Primary estimator:** Inverse-variance weighted (IVW) MR
+- **Sensitivity estimators:**  
+  - MR-Egger  
+  - Weighted median  
+  - Simple median  
+
+### Robustness and Bias Diagnostics
+- Cochran’s Q test (heterogeneity)
+- MR-Egger intercept test (directional pleiotropy)
+- MR-PRESSO (outlier detection, corrected estimate, distortion test)
+- Leave-one-out analysis
+- Single-SNP MR estimates and funnel plot
+
+---
+
+## Repository Structure
+
+```text
+.
+FinalProject_BMIN5030_AnanyaKapoor/
+├── README.md
+├── insomnia_mdd_final_project_KAPOOR.qmd
+├── insomnia_mdd_final_project_KAPOOR.html
+└── insomnia_mdd_final_project_KAPOOR_files/
+    ├── figure-html/
+    ├── libs/
+    └── results/
