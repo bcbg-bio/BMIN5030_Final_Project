@@ -1,0 +1,1279 @@
+---
+title: "Final_Project_Torgersen"
+format: html
+editor: visual
+---
+
+## Evaluation of a Default Hepatitis C Screening and Linkage to Care Program Among Hospitalized Adults
+
+## OVERVIEW
+
+Embedding hepatitis C virus (HCV) screening during hospitalization can improve diagnosis of HCV; however, linkage to outpatient care is needed to ensure access to curative treatment. Since October 2023, Penn Medicine has implemented a default HCV screening and linkage program for adults admitted to the hospital to improve diagnosis of HCV viremia and allow for proactive linkage of such patients to outpatient HCV care. This project will evaluate the effectiveness of the program using the HCV Care Cascade framework to identify proportion of patient successfully completing each step along the care cascade to ultimate confirmation of HCV cure. The analysis will focus on identifying factors associated with successful HCV care engagement after linkage to outpatient HCV care among people with HCV viremia identified at time of hospitalization. The barriers and facilitators to care engagement will inform further programmatic interventions to improve access to curative HCV treatment.
+
+## INTRODUCTION
+
+Hepatitis C virus (HCV) is the most common bloodborne infection in the US, estimated to infect 2.4 million people. HCV remains underdiagnosed with 44% of people remaining unaware of their infection.(1) To improve diagnosis of HCV, the CDC and USPSTF released recommendations for the expansion of HCV screening to all adults 18-79 years in 2020, yet screening has historically been relegated to the primary care setting.(2, 3) As a result, completion of HCV screening is further complicated as many people with HCV are not regularly engaged in primary care.
+
+To improve uptake of HCV screening, health systems have aimed to provide low-barrier screening in settings wherever people access medical care.(4) Screening for HCV during hospital admission is one approach to improve uptake of screening; however, linkage to outpatient care is needed for people diagnosed with HCV as inpatient HCV treatment is not standard of care. Programs coupling both HCV screening and linkage to care for hospitalized patients in need of curative treatment may facilitate timely and low-barrier access to curative HCV treatment
+
+The HCV Care Cascade details the proportion of people who are diagnosed with HCV who ultimately achieve the necessary steps to achieve HCV cure, including linkage to care, care engagement, initiation of treatment, completion of treatment, and confirmation of HCV cure.(5) Quantifying each step along the care cascade for HCV cure can allow for programmatic evaluation to identify where resources may be necessary by identifying steps where there are declines in completion. In October 2023, Penn Medicine launched a health-system-wide default inpatient HCV screening and linkage program to improve diagnosis of HCV and facilitate timely access to curative treatment. This work presents the first 18 months of this program and evaluate completion of each step along the care cascade to identify barriers and facilitators to HCV cure following inpatient diagnosis.
+
+## METHODS
+
+*Study Design and Setting*
+
+We conducted a prospective study among patients with HCV identified by through a default inpatient hepatitis C screening pilot program between program launch on October 16, 2023 and April 13, 2025, previously described.(6) Briefly, the default inpatient HCV screening program was implemented at five academic hospitals within one health system in southeastern Pennsylvania and southern New Jersey, to provide systematic HCV screening among admitted all adult patients. These hospitals include Penn Presbyterian Medical Center (PPMC), Pennsylvania Hospital (PAH), Hospital of the University of Pennsylvania (HUP; includes HUP Cedar and Penn Rittenhouse), Chester County Hospital (CCH), and Princeton Medical Center (MCP) (**Figure 1**). The default HCV screening order populated within the admission order set only for patients without prior HCV testing completed within the health system EHR, or a diagnosis of HCV was recorded within the past medical history. Admitting providers could remove the HCV screening order if deemed not clinically indicated. All positive antibody and all results from reflexive viral load assays generated from this screening order were automatically routed to the Hepatitis Linkage Team in real time.
+
+![Figure 1. Map of Penn Medicine Hospitals. Starred locations indicate hospitals included in the study.](images/BMIN_5030_Map.png)
+
+The Hepatitis Linkage Team is comprised of dedicated staff, including one Infectious Disease physician, one nurse navigator, and a care navigator embedded within the health system. Following receipt of the HCV results, the Hepatitis Linkage Team connects with all patients with a reactive HCV antibody to provide result disclosure and counseling, including the need for follow-up of the pending HCV RNA assay. All patients with a positive antibody and any detectable viral load were considered to be in need of curative HCV treatment and contacted for linkage to care by the Nurse Navigator. All patients with HCV viremia confirmed by detectable RNA were similarly approached by the Hepatitis Linkage Team for result disclosure, counseling on availability of curative treatment, and provided linkage to an HCV treating provider within or external to the health system based on the patient’s preference. All patient contact from the Hepatitis Linkage Team was conducted by phone, approached at bedside during hospital admission, EHR secure messaging, or mailed letter to recorded address after hospital discharge.
+
+The study was reviewed by the University of Pennsylvania Institutional Review Board and deemed to be a quality improvement evaluation.
+
+*Study Patients*
+
+All patient screened by the default HCV screening mechanism were eligible for inclusion in the analysis. Patient characteristics were ascertained at the time of HCV linkage attempt. Patients who had HCV viremia with concurrent terminal illness, discharge to hospice, death during index hospitalization, or declining linkage were considered not appropriate for HCV linkage and were excluded from analysis where indicated. Patients were followed through November 30, 2025 to assess completion of steps along the HCV care cascade. Patients were considered lost to be lost if there was no response to at least three outreach attempts by three different modalities (i.e., telephone call, text messaging, mailed letter, emergency contact, clinical care team, etc.).
+
+*Data Abstraction*
+
+Patient-level data were collected from two mechanisms. First, weekly EHR queries were generated inclusive of all patients completing HCV screening through the default admission order. Among patients with detectable HCV viremia, additional manual medical record review was completed to abstract data on additional demographics and barriers to traditional models of care. Such variables included insurance status (defined as Medicaid only, dual Medicare/Medicaid, Medicare only, other insurance \[inclusive of commercial or Veterans Affairs coverage\], or no insurance), housing instability (defined as being unhoused or unable to pay for housing at any point in prior 12 months), presence of recorded phone number, recorded zip code, discharge location, and any reported substance use within prior 12 months. Data were abstracted onto structured forms in REDCap, a secure, Health Insurance Portability and Accountability Act (HIPAA)-compliant program.(7, 8)
+
+*Care Cascade Definitions*
+
+Linkage was defined as an appointment scheduled with an HCV-treating provider on behalf of the patient and provided to the patient following result disclosure and counseling. Care engagement was defined as attendance at ≥1 scheduled appointment with an HCV-treating provider, either in-person or via telemedicine during the study period. Initiation of HCV treatment was defined as the day of HCV treatment dispensation.
+
+*Description of Time-to-Events*
+
+Time to initiation of HCV treatment was defined as the number of days from index hospitalization admission to date of prescription dispensation. Time to treatment initiation was defined as the number of days from index hospitalization to date of patient reported HCV treatment start. HCV cure was defined by documentation of sustained virologic response at ≥4 weeks following last dose of HCV treatment.
+
+*Descriptive Mapping*
+
+As Penn Medicine hospitals include quaternary referral centers, patients may be transferred in for highly specialized medical care from the surrounding communities. To describe the geographical distribution of patients identified with HCV viremia, recorded zip codes were abstracted from the medical record and mapped for patients with HCV viremia in the states of Pennsylvania, New Jersey, Delaware, and Maryland. Counts of patients in each zip code were plotted.
+
+*Statistical Analysis*
+
+Factors associated with care engagement were evaluated using univariable and multivariable logistic regression models (95% confidence intervals \[CI\]). The binary outcomes was care engagement. All baseline factors were evaluated as potential confounders except HCV viral level given absence of plausible mechanisms by which higher/lower viral load would be associated with care engagement. Collinearity among factors was visually evaluated with a correlation coefficient heatmap and with calculation of variance inflation factors in the multivariable models. The final parsimonious multivariable model was created by fitting the full model and applying backwards and forward selection of factors to minimize the Akaike Information Criterion (AIC). The Hosmer-Lemeshow goodness-of-fit test was used to evaluate the final parsimonious model. All statistical analyses were completed using R Studio.
+
+## RStudio Code - Data Cleaning and Analysis
+
+## Load packages
+
+```{r}
+#| warning: false
+# Unable to render to HTML with intall packaged as chunk
+#install.packages("Amelia")
+#install.packages("zipcodeR") 
+#install.packages("maps") 
+#install.packages("mapdata") 
+#install.packages("leaflet") 
+#install.packages("car") 
+#install.packages("ResourceSelection") 
+#install.packages("corrplot")
+```
+
+```{r}
+#| warning: false
+library(readr)
+library(dplyr)
+library(ggplot2)
+library(gtsummary)
+library(gt)
+library(Amelia)
+library(tidyr)
+library(tigris)
+library(sf)
+library(tidyverse)
+library(viridis)
+library(leaflet)
+library(purrr)
+library(broom)
+library(zipcodeR)
+library(maps)
+library(mapdata)
+library(stringr)
+library(car)
+library(ResourceSelection)
+library(corrplot)
+```
+
+## Read CSV data file and list table variables
+
+```{r}
+
+HCV_LINKAGE_DEC2025_ANALYSIS <- read_csv("HCV_LINKAGE_DEC2025_ANALYSIS.csv")
+View(HCV_LINKAGE_DEC2025_ANALYSIS)
+str(HCV_LINKAGE_DEC2025_ANALYSIS)
+
+```
+
+## Data Dictionary
+
+[Hospital]{.underline}: `PPMC = Penn Presbyterian Medical Center;`PMC = Princeton Medical Center; PAH = Pennsylvania Hospital; \`HUP = Hospital of the University of Pennsylvania, HUP Cedar, Penn Rittenhouse; CCH = Chester County Hospital
+
+[Age]{.underline}: age at date of HCV testing
+
+[Gender]{.underline}: M = Male; F = Female; TF = transfemale
+
+[Race_Ethnicity]{.underline}: Asian; NHB = Nonhispanic Black; NHW = Nonhispanic White; H = Hispanic; Other/Unknown
+
+[Zip]{.underline}: Zipcode listed on patient's medical record as registered address
+
+[Hospital_Address]{.underline}: Indicator variable if patient's registered address was recorded as the hospital address
+
+[Insurance]{.underline}: Medicare, Medicaid, Medicare/Medicaid Dual-eligible, Commercial, None, Other
+
+[PCP]{.underline}: Y = patient has recorded PCP; N = patient does not have a recorded PCP
+
+[Phone]{.underline}: Y = patient has a documented phone number; N = patient does not have a documented phone number
+
+[LOS]{.underline}: length of stay of hospitalization (days)
+
+[DC_Location]{.underline}: place where patient was discharged to.`Home;`Shelter;`Facility; \`PDD = patient-directed discharge
+
+[SUD12]{.underline}: Y = substance use reported in past 12 months Housing_Insec: Y = patient is homeless or reports unstable housing in prior 12 months.
+
+[HCV IU m L]{.underline}: hepatitis C viral load, international units per milliliter
+
+[Linked (Y/N)]{.underline}: was patient linked to an HCV-treating provider - Yes or No
+
+[Engaged (Y/N)]{.underline}: did the patient attend at least one appointment with a HCV-treating provider
+
+[Admit_to_Appt_D]{.underline}: days from hospital admission to first linkage appointment recorded
+
+[Discharge_to_App]{.underline}: days from hospital discharge to first linkage appointment
+
+[Admit_to_DAA_D]{.underline}: days from hospital admission to start of direct acting antivirals for HCV treatment
+
+[Time_to_HCV_Cur]{.underline}e: days from HCV viremia test result to confirmation of HCV cure
+
+[DAAStartToCureConfirm]{.underline}: days from DAA start to confirmation of HCV cure
+
+## Visualizing the data
+
+Create plots of data missingness, distribution of variables, cleaning variables to prepare for analysis.
+
+```{r}
+#Summary of Missingness
+HCV_LINKAGE_DEC2025_ANALYSIS %>%
+  summarise(across(everything(), ~ sum(is.na(.))))
+
+#Heatmap of missing data
+missmap(HCV_LINKAGE_DEC2025_ANALYSIS,
+        main = "Missing Data Map",
+        col = c("grey", "black"),
+        legend = TRUE)
+
+#Age at HCV Testing
+ggplot(HCV_LINKAGE_DEC2025_ANALYSIS, aes(x = Age)) +
+  geom_histogram(binwidth = 5, fill = "steelblue", color = "black") +
+  labs(title = "Histogram of Age",
+       x = "Age",
+       y = "Count")
+
+#Type of insurance
+HCV_LINKAGE_DEC2025_ANALYSIS %>%
+  count(Insurance) %>%
+  mutate(Percent = round(n / sum(n) * 100, 1))
+
+#Manual entry of insurance type leading to misspellings 
+#Cleaning misspellings of Medicaid insurance 
+HCV_LINKAGE_DEC2025_ANALYSIS <- HCV_LINKAGE_DEC2025_ANALYSIS %>%
+  mutate(
+    Insurance = case_when(
+      Insurance %in% c(
+        "Medcaid", "Medciad", "Medciaid", "Mediciad", "Mediciaid",
+        "medicaid", "medicaid ", " medicaid"
+      ) ~ "Medicaid",
+      TRUE ~ Insurance
+    )
+  )
+
+#Cleaning misspellings of Medicare insurance
+HCV_LINKAGE_DEC2025_ANALYSIS <- HCV_LINKAGE_DEC2025_ANALYSIS %>%
+  mutate(
+    Insurance = case_when(
+      Insurance %in% c(
+        "Medcard", "Medcaire", "medicare", "Medicaire", "Medcare"
+      ) ~ "Medicare",
+      TRUE ~ Insurance
+    )
+  )
+
+#Grouping other insurance into "Other" category 
+HCV_LINKAGE_DEC2025_ANALYSIS <- HCV_LINKAGE_DEC2025_ANALYSIS %>%
+  mutate(
+    Insurance = case_when(
+      Insurance %in% c(
+        "Commercial", "LIFE", "Life", "VA"
+      ) ~ "Other",
+      TRUE ~ Insurance
+    )
+  )
+
+HCV_LINKAGE_DEC2025_ANALYSIS %>%
+  count(Insurance) %>%
+  mutate(Percent = round(n / sum(n) * 100, 1))
+
+
+#Cleaning Phone categories 
+HCV_LINKAGE_DEC2025_ANALYSIS %>%
+  mutate(
+    Phone = case_when(
+      Phone %in% c("Y", "y") ~ "Y",
+      Phone %in% c("N", "n") ~ "N",
+      TRUE ~ Phone
+    )
+  ) %>%
+  count(Phone) %>%
+  mutate(Percent = round(n / sum(n) * 100, 1))
+
+#Location at Discharge
+HCV_LINKAGE_DEC2025_ANALYSIS %>%
+  count(DC_Location) %>%
+  mutate(Percent = round(n / sum(n) * 100, 1))
+
+#Housing Insecurity
+HCV_LINKAGE_DEC2025_ANALYSIS %>%
+  count(Housing_Insec) %>%
+  mutate(Percent = round(n / sum(n) * 100, 1))
+
+#Listing location of discharge by Housing Insecurity
+total_n <- nrow(HCV_LINKAGE_DEC2025_ANALYSIS)
+
+HCV_LINKAGE_DEC2025_ANALYSIS %>%
+  count(Housing_Insec, DC_Location) %>%
+  mutate(
+    Percent_Total = round(n / total_n * 100, 1)
+  )
+
+#HCV viral load at testing
+sort(HCV_LINKAGE_DEC2025_ANALYSIS$`HCV IU m L`, decreasing = FALSE)
+
+HCV_LINKAGE_DEC2025_ANALYSIS$`HCV IU m L` <- 
+  as.numeric(HCV_LINKAGE_DEC2025_ANALYSIS$`HCV IU m L`)
+
+#Only one observation recorded as "<15 detected". Re-coding this variable as numeric 15 to allow for analysis of viral loads as numeric variable.
+HCV_LINKAGE_DEC2025_ANALYSIS <- HCV_LINKAGE_DEC2025_ANALYSIS %>%
+  mutate(`HCV IU m L` = if_else(is.na(`HCV IU m L`), 15, `HCV IU m L`))
+
+HCV_LINKAGE_DEC2025_ANALYSIS %>%
+  summarise(
+    mean_HCVRNA = mean(`HCV IU m L`, na.rm = TRUE),
+    median_HCVRNA = median(`HCV IU m L`, na.rm = TRUE),
+    min_HCVRNA = min(`HCV IU m L`, na.rm = TRUE),
+    max_HCVRNA = max(`HCV IU m L`, na.rm = TRUE),
+    range_HCVRNA = max(`HCV IU m L`, na.rm = TRUE) - min(Age, na.rm = TRUE),
+    IQR_HCVRNA = IQR(`HCV IU m L`, na.rm = TRUE),
+    IQR_25 = quantile(`HCV IU m L`, probs = 0.25, na.rm = TRUE),
+    IQR_75 = quantile(`HCV IU m L`, probs = 0.75, na.rm = TRUE)
+  )
+
+#Cleaning PCP categories 
+HCV_LINKAGE_DEC2025_ANALYSIS %>%
+  mutate(
+    PCP = case_when(
+      PCP %in% c("Y", "y") ~ "Y",
+      PCP %in% c("N", "n") ~ "N",
+      TRUE ~ PCP
+    )
+  ) %>%
+  count(PCP) %>%
+  mutate(Percent = round(n / sum(n) * 100, 1))
+
+
+```
+
+```{r}
+#HCV Diagnoses by Hospital
+
+#Create summary table
+hospital_data <- HCV_LINKAGE_DEC2025_ANALYSIS %>%
+  count(Hospital) %>%
+  mutate(Percent = round(n / sum(n) * 100, 1),       
+         Label = paste0(Percent, "%"))              
+
+#Pie chart with percentage labels
+ggplot(hospital_data, aes(x = "", y = n, fill = Hospital)) +
+  geom_bar(stat = "identity", width = 1) +
+  coord_polar("y") +
+  geom_text(aes(label = Label),
+            position = position_stack(vjust = 0.5), size = 6) +
+  labs(title = "Distribution of Hospital Categories",
+       fill = "Hospital") +
+  theme_void()
+
+#For comparison, Number of Hospital Beds by Hospital
+bed_data <- data.frame(
+  Hospital = c("CCH", "HUP", "MCP", "PAH", "PPMC"),
+  Beds = c(300, 1100, 500, 250, 300)
+)
+
+# Calculate percentages
+bed_data$Percent <- round(bed_data$Beds / sum(bed_data$Beds) * 100, 1)
+
+# Pie chart with labels
+ggplot(bed_data, aes(x = "", y = Beds, fill = Hospital)) +
+  geom_bar(stat = "identity", width = 1) +
+  coord_polar("y") +
+  geom_text(aes(label = paste0(Percent, "%")),
+            position = position_stack(vjust = 0.5),
+            size = 6) +
+  labs(title = "Approximate Distribution of Hospital Beds") +
+  theme_void()
+
+```
+
+```{r}
+
+# Race and Ethnicity Counts and Percentages
+HCV_LINKAGE_DEC2025_ANALYSIS %>%
+  count(Race_Ethnicity) %>%
+  mutate(Percent = round(n / sum(n) * 100, 1))
+
+#Distribtion of Race and Ethnicity 
+ggplot(HCV_LINKAGE_DEC2025_ANALYSIS, aes(x = Race_Ethnicity)) +
+  geom_bar(fill = "steelblue") +
+  labs(
+    title = "Distribution of Race/Ethnicity",
+    x = "Race/Ethnicity",
+    y = "Count"
+  ) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+#Race/Ethnicity by Gender - Percentage of Total Sample
+race_gender_data <- HCV_LINKAGE_DEC2025_ANALYSIS %>%
+  count(Gender, Race_Ethnicity) %>%
+  mutate(Percent = round(n / sum(n) * 100, 1))
+
+# Bar chart with percent labels
+ggplot(race_gender_data, aes(x = Race_Ethnicity, y = Percent, fill = Gender)) +
+  geom_bar(stat = "identity", position = "dodge") +
+  geom_text(aes(label = paste0(Percent, "%")),
+            position = position_dodge(width = 0.9),
+            vjust = -0.3,
+            size = 2.5) +
+  labs(title = "Race/Ethnicity Distribution by Gender",
+       x = "Race/Ethnicity",
+       y = "Percent",
+       fill = "Gender") +
+  theme_bw() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+```
+
+## Calculating summary statistics
+
+```{r}
+#Age at HCV Testing
+
+HCV_LINKAGE_DEC2025_ANALYSIS %>%
+  summarise(
+    mean_age = mean(Age, na.rm = TRUE),
+    median_age = median(Age, na.rm = TRUE),
+    min_age = min(Age, na.rm = TRUE),
+    max_age = max(Age, na.rm = TRUE),
+    range_age = max(Age, na.rm = TRUE) - min(Age, na.rm = TRUE),
+    IQR_age = IQR(Age, na.rm = TRUE),
+    IQR_25 = quantile(Age, probs = 0.25, na.rm = TRUE),
+    IQR_75 = quantile(Age, probs = 0.75, na.rm = TRUE)
+  )
+
+ggplot(HCV_LINKAGE_DEC2025_ANALYSIS, aes(y = Age)) +
+  geom_boxplot(fill = "steelblue") +
+  labs(title = "Boxplot of Age",
+       y = "Age")
+
+
+#Age distribution by Hospital
+ggplot(HCV_LINKAGE_DEC2025_ANALYSIS, aes(x = Hospital, y = Age, fill = Hospital)) +
+  geom_boxplot() +
+  labs(title = "Boxplot of Age by Hospital",
+       x = "Hospital",
+       y = "Age") +
+  theme_bw() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+#Hospital Length of Stay
+HCV_LINKAGE_DEC2025_ANALYSIS %>%
+  summarise(
+    mean_LOS = mean(LOS, na.rm = TRUE),
+    median_LOS = median(LOS, na.rm = TRUE),
+    min_LOS = min(LOS, na.rm = TRUE),
+    max_LOS = max(LOS, na.rm = TRUE),
+    range_LOS = max(LOS, na.rm = TRUE) - min(LOS, na.rm = TRUE),
+    IQR_LOS = IQR(LOS, na.rm = TRUE),
+    IQR_25 = quantile(LOS, probs = 0.25, na.rm = TRUE),
+    IQR_75 = quantile(LOS, probs = 0.75, na.rm = TRUE)
+  )
+
+ggplot(HCV_LINKAGE_DEC2025_ANALYSIS, aes(x = LOS)) +
+  geom_histogram(binwidth = 1, fill = "steelblue", color = "black") +
+  labs(title = "Histogram of Length of Stay (LOS)",
+       x = "LOS",
+       y = "Count")
+
+
+```
+
+## HCV Care Cascade
+
+Create HCV care cascade with steps including 1) total number of patients with HCV viremia, 2) number of patients with HCV viremia linked to a HCV_treating provider, 3) number of patients with HCV viremia engaged in care, 4) number of patients with HCV viremia starting on DAAs, and 5) number of patients with HCV viremia who subsequently achieve HCV cure. HCV cure is defined by sustained virologic response \>= 12 weeks (SVR12) after completing DAA course.
+
+```{r}
+# Total N for denominator
+total_n <- nrow(HCV_LINKAGE_DEC2025_ANALYSIS)
+
+#Create binary variable for starting DAAs
+HCV_LINKAGE_DEC2025_ANALYSIS <- HCV_LINKAGE_DEC2025_ANALYSIS %>%
+  mutate(`Started DAAs` = if_else(!is.na(DAA), "Y", "N"))
+
+#Build cascade data
+cascade <- tibble(
+  Stage = c("Total", "Linked to Care", "Engaged in Care", "Started DAAs", "Confirmed SVR12"),
+  Count = c(
+    total_n,
+    sum(HCV_LINKAGE_DEC2025_ANALYSIS$`Linked (Y/N)` == "Y", na.rm = TRUE),
+    sum(HCV_LINKAGE_DEC2025_ANALYSIS$`Engaged (Y/N)` == "Y", na.rm = TRUE),
+    sum(HCV_LINKAGE_DEC2025_ANALYSIS$`Started DAAs` == "Y", na.rm = TRUE),
+    sum(HCV_LINKAGE_DEC2025_ANALYSIS$`SVR12 (Y/N)` == "Y", na.rm = TRUE)
+  )
+) %>%
+  mutate(
+    Percent = round((Count / total_n) * 100, 1),
+    Label = paste0(Count, " (", Percent, "%)"),
+    Stage = factor(Stage, levels = c("Total", "Linked to Care", "Engaged in Care", "Started DAAs", "Confirmed SVR12"))
+  )
+
+#Plot cascade
+ggplot(cascade, aes(x = Stage, y = Count)) +
+  geom_bar(stat = "identity", fill = "steelblue") +
+  geom_text(aes(label = Label), vjust = -0.5, size = 4) +
+  labs(title = "HCV Care Cascade",
+       x = "Cascade Stage",
+       y = "Number of Patients") +
+  ylim(0, max(cascade$Count) * 1.15) +
+  theme_bw() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+```
+
+Not all patients identified with HCV viremia during hospitalization will be clinically appopriate candidates for HCV treatment. It is worth noting that patients present to the hospital with acute illness, which may rapidly lead life-limiting diagnosis. Given HCV is predominantly a chronic viral infection, people with life expectancy \<12 months are not expected to benefit from HCV cure. As such, patients with limited life expectancy are not appropriate for HCV linkage. Presenting the HCV care cascade including all patients, including those with limited life expectancy, would capture those patients who would not benefit from moving through the cascade steps.
+
+To identify gaps along the HCV care cascade among people who would benefit from HCV treatment, the following analysis will be limited to those patients appopriate for linkage to HCV treatment.
+
+```{r}
+#Limiting Care Cascade to Patients Clinically Appropriate for Treatment (Life Expectancy >12 months)
+
+HCV_LINKAGE_DEC2025_ANALYSIS %>%
+  count(Reason_Not_Linked) %>%
+  mutate(Percent = round(n / sum(n) * 100, 1))
+
+# Filter out Life Expectancy exclusions
+filtered_data <- HCV_LINKAGE_DEC2025_ANALYSIS %>%
+  filter(`Reason_Not_Linked` != "Life Expectancy" | is.na(`Reason_Not_Linked`))
+
+# Total N after filtering
+total_n <- nrow(filtered_data)
+
+# Create Started DAAs indicator in filtered dataset
+filtered_data <- filtered_data %>%
+  mutate(`Started DAAs` = if_else(!is.na(DAA), "Y", "N"))
+
+cascade <- tibble(
+  Stage = c("Total", "Linked to Care", "Engaged in Care", "Started DAAs", "Confirmed SVR12"),
+  Count = c(
+    total_n,
+    sum(HCV_LINKAGE_DEC2025_ANALYSIS$`Linked (Y/N)` == "Y", na.rm = TRUE),
+    sum(HCV_LINKAGE_DEC2025_ANALYSIS$`Engaged (Y/N)` == "Y", na.rm = TRUE),
+    sum(HCV_LINKAGE_DEC2025_ANALYSIS$`Started DAAs` == "Y", na.rm = TRUE),
+    sum(HCV_LINKAGE_DEC2025_ANALYSIS$`SVR12 (Y/N)` == "Y", na.rm = TRUE)
+  )
+) %>%
+  mutate(
+    Percent = round((Count / total_n) * 100, 1),
+    Label = paste0(Count, " (", Percent, "%)"),
+    Stage = factor(Stage, levels = c("Total", "Linked to Care", "Engaged in Care", "Started DAAs", "Confirmed SVR12"))
+  )
+
+# Plot cascade
+ggplot(cascade, aes(x = Stage, y = Count)) +
+  geom_bar(stat = "identity", fill = "steelblue") +
+  geom_text(aes(label = Label), vjust = -0.5, size = 4) +
+  labs(title = "HCV Care Cascade",
+       x = "Cascade Stage",
+       y = "Number of Patients") +
+  ylim(0, max(cascade$Count) * 1.15) +
+  theme_bw() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+#Limiting to patients appropriate for linkage (excludes people with limited life expectancy)
+HCV_LINKAGE_DEC2025_ANALYSIS <- HCV_LINKAGE_DEC2025_ANALYSIS %>%
+  mutate(Appropriate_for_Linkage = if_else(
+    is.na(Reason_Not_Linked) | Reason_Not_Linked != "Life Expectancy",
+    "Y",
+    "N"
+  ))
+
+HCV_LINKAGE_DEC2025_ANALYSIS %>%
+  filter(Appropriate_for_Linkage == "Y") %>%      
+  count(Housing_Insec) %>%
+  mutate(Percent = round(n / sum(n) * 100, 1))
+
+#Create table of baseline characteristics for all patients with HCV viremia
+library(dplyr)
+library(gtsummary)
+
+#Cleaning Phone categories 
+HCV_LINKAGE_DEC2025_ANALYSIS %>%
+  mutate(
+    Phone = case_when(
+      Phone %in% c("Y", "y") ~ "Y",
+      Phone %in% c("N", "n") ~ "N",
+      TRUE ~ Phone
+    )
+  ) %>%
+  count(Phone) %>%
+  mutate(Percent = round(n / sum(n) * 100, 1))
+
+tbl_all <- HCV_LINKAGE_DEC2025_ANALYSIS %>%
+  dplyr::select(                        
+    -Appropriate_for_Linkage,
+    -Zip,
+    -`HCV IU m L`,
+    -STUDY_ID,
+    -Hospital_Address
+  ) %>%
+  tbl_summary(
+    type = list(where(is.numeric) ~ "continuous2"),
+    statistic = list(
+      all_continuous() ~ c("{mean} ({sd})", "{median} [{p25}, {p75}]"),
+      all_categorical() ~ "{n} ({p}%)"
+    ),
+    missing = "ifany"
+  ) %>%
+  add_n() %>%
+  bold_labels()
+
+tbl_all %>% 
+  as_gt()
+
+```
+
+```{r}
+#Quantifying reasons patients were not linked to care
+
+# Create summary table, removing NA values
+reason_data <- HCV_LINKAGE_DEC2025_ANALYSIS %>%
+  filter(!is.na(Reason_Not_Linked)) %>%        # omit NA
+  count(Reason_Not_Linked) %>%
+  mutate(
+    Percent = round(n / sum(n) * 100, 1),
+    Label = paste0(n, " (", Percent, "%)")
+  )
+
+# Pie chart - removing "NA" observations in Reason_Not_Linked as "NA" observations occur only for patients linked to care
+ggplot(reason_data, aes(x = "", y = n, fill = Reason_Not_Linked)) +
+  geom_bar(stat = "identity", width = 1) +
+  coord_polar("y") +
+  geom_text(aes(label = Label),
+            position = position_stack(vjust = 0.5),
+            size = 4) +
+  labs(title = "Reasons for Not Being Linked to Care",
+       fill = "Reason Not Linked") +
+  theme_void()
+
+```
+
+The first gap along the care cascade is failure to link a patient with HCV viremia to care. While the Hepatitis Linkage Team will follow up with patients both during and after hospital discharge to attempt to link patients to an HCV treating provider, the team will stop after \>=3 outreach attempts have been made, ideally via \>=3 different modalities. For example, a patient discharge from the hospital may be contacted by the Hepatitis Linkage Team via phone call, MyPennMedicine message, generic text message, letter sent to mailing address, call to listed Emergency Contact, or outreach to known outpatient clinical provider for continuity of care. Generally, the Hepatitis Linkage Team will exhaust all points of potential contact before recording a patient as "lost to care"; however, not all patients have these points of contact recorded.
+
+```{r}
+#Exploring how reasons not linked vary by discharge location
+
+# Filter out NA and "Life Expectancy" because these patients are linked (if value = NA) or patients are not clinically appropriate for linkage given their life expectancy is <12 months.
+
+filtered_data <- HCV_LINKAGE_DEC2025_ANALYSIS %>%
+  filter(!is.na(Reason_Not_Linked),
+         Reason_Not_Linked != "Life Expectancy")
+
+# Create counts for labeling
+reason_counts <- filtered_data %>%
+  count(Reason_Not_Linked, DC_Location)
+
+ggplot(reason_counts, 
+       aes(x = Reason_Not_Linked, y = n, fill = DC_Location)) +
+  geom_bar(stat = "identity", position = position_dodge(width = 0.9)) +
+  geom_text(aes(label = n),
+            position = position_dodge(width = 0.9),
+            vjust = -0.3,
+            size = 4) +
+  labs(title = "Reasons for Not Being Linked by Discharge Location",
+       x = "Reason Not Linked",
+       y = "Count",
+       fill = "DC Location") +
+  theme_bw() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+
+
+```
+
+## Baseline Characteristics of Patients Appropriate for Linkage to HCV Care
+
+Generating a Table 1 for Baseline Demographics and Clinical Characteristics.
+
+```{r}
+
+HCV_LINKAGE_DEC2025_ANALYSIS <- HCV_LINKAGE_DEC2025_ANALYSIS %>%
+  mutate(`Engaged (Y/N)` = if_else(`Linked (Y/N)` == "N", NA_character_, `Engaged (Y/N)`))
+
+table(
+   HCV_LINKAGE_DEC2025_ANALYSIS$`Linked (Y/N)`,
+   HCV_LINKAGE_DEC2025_ANALYSIS$`Engaged (Y/N)`
+)
+
+
+HCV_LINKAGE_DEC2025_ANALYSIS <- HCV_LINKAGE_DEC2025_ANALYSIS %>%
+  mutate(`Engaged (Y/N)` = if_else(
+    `Linked (Y/N)` == "Y" & is.na(`Engaged (Y/N)`),
+    "N",
+    `Engaged (Y/N)`
+  ))
+
+HCV_LINKAGE_DEC2025_ANALYSIS <- HCV_LINKAGE_DEC2025_ANALYSIS %>%
+  mutate(ReasonNotEngaged = if_else(
+    `Engaged (Y/N)` == "Y",
+    NA_character_,
+    ReasonNotEngaged
+  ))
+
+#Generating a Table 1: Baseline Characteristics of Patients with HCV Virema Appropriate for Linkage to Care.
+#keep only appropriate cases
+#EXCLUDE zip code, HCV viral load value, study ID and hospital address variable
+
+library(dplyr)
+library(gtsummary)
+
+tbl_appropriate <- HCV_LINKAGE_DEC2025_ANALYSIS %>%
+  filter(Appropriate_for_Linkage == "Y") %>%
+  dplyr::select(                        # <-- FIXED HERE
+    -Appropriate_for_Linkage,
+    -Zip,
+    -`HCV IU m L`,
+    -STUDY_ID,
+    -Hospital_Address
+  ) %>%
+  tbl_summary(
+    type = list(where(is.numeric) ~ "continuous2"),
+    statistic = list(
+      all_continuous() ~ c("{mean} ({sd})", "{median} [{p25}, {p75}]"),
+      all_categorical() ~ "{n} ({p}%)"
+    ),
+    missing = "ifany"
+  ) %>%
+  add_n() %>%
+  bold_labels()
+
+tbl_appropriate %>% 
+  as_gt()
+
+```
+
+## Mapping HCV Viremia By Zip Code
+
+Mapping counts of patients with HCV viremia may allow the Hepatitis Linkage Team to focus outreach efforts with community partners by mapping areas with higher counts of patients.
+
+Mapping by zip code limited as patients with "Hospital_Address" != "NA" identifies patients who have the admitting hospital address or outpatient clinic listed as their mailing address. This occurs when patients are un-housed and/or present as a trauma and elope from the hospital before accurate contact information can be obtained. The zip codes included in this dataset can identify where patients are accessing care; however, the zip code map may not accurately reflect the area of patient residence.
+
+```{r}
+
+# Save map as PDF
+pdf("HCV_Linkage_ZIP_Map.pdf", width = 8, height = 6)
+
+#Create dataset to map (all patients included - not just those appropriate for linkage)
+df <- HCV_LINKAGE_DEC2025_ANALYSIS
+
+#Restrict to states of interest - this excludes patients listing address as remote state (ex. Florida)
+states_keep <- c("PA", "NJ", "DE", "MD")
+
+# ZIP metadata from zipcodeR
+zip_meta <- zipcodeR::zip_code_db %>%
+  filter(state %in% states_keep)
+
+# Count ZIPs in your data - mapping by counts of patients within each zip code
+zip_counts <- df %>%
+  filter(!is.na(Zip)) %>%
+  count(Zip, name = "Count")
+
+# Merge ZIP counts with geolocation info
+zip_map <- zip_counts %>%
+  left_join(zip_meta, by = c("Zip" = "zipcode")) %>%
+  drop_na(lat, lng)
+
+# Plot map of the four states only
+map("state", 
+    regions = c("pennsylvania", "new jersey", "delaware", "maryland"),
+    fill = TRUE, col = "gray90", bg = "white")
+
+points(zip_map$lng, zip_map$lat,
+       pch = 21, bg = "red", col = "black",
+       cex = scales::rescale(zip_map$Count, to = c(0.5, 4)))
+
+title("Number of Patients with HCV Viremia by ZIP Code (PA/NJ/DE/MD)")
+
+
+dev.off() 
+
+```
+
+![Mapping of Zip Codes for Patients Identified with HCV Viremia](ZipCodes_121025.png)
+
+## Logistic Regression Model
+
+Developing model to evaluate associations between baseline variables and outcome of interest. Given the largest clinically significant gap is between patient linkage and care engagement, the model outcome is "Engaged (Y/N)" to identify factors associated with successful care engagement. Factors negatively associated with HCV care engagement can inform future strategies and interventions to effectively target these factors for the purposes of improved care engagement.
+
+1.  Models are limited to only patients linked to HCV care (i.e., Linked (Y/N) = Y) as patients cannot be engaged in care if they are not first linked to care.
+
+```{r}
+
+#Limiting analysis to people who have been linked to care
+HCV_LINKAGE_LINKED_ONLY <- HCV_LINKAGE_DEC2025_ANALYSIS %>%
+  filter(`Linked (Y/N)` == "Y")
+
+#Dropping Gender=TF from analysis given only 2 observations - unable to draw conclusions with so few observations.
+HCV_LINKAGE_LINKED_ONLY <- HCV_LINKAGE_LINKED_ONLY %>%
+    filter(Gender != "TF")
+
+#Creating reference groups for each variable
+HCV_LINKAGE_LINKED_ONLY$Gender <- relevel(factor(HCV_LINKAGE_LINKED_ONLY$Gender), ref = "M")
+
+HCV_LINKAGE_LINKED_ONLY$Insurance <- relevel(factor(HCV_LINKAGE_LINKED_ONLY$Insurance), ref = "Medicaid")
+
+HCV_LINKAGE_LINKED_ONLY$PCP <- relevel(factor(HCV_LINKAGE_LINKED_ONLY$PCP), ref = "Y")
+
+HCV_LINKAGE_LINKED_ONLY$Phone <- relevel(factor(HCV_LINKAGE_LINKED_ONLY$Phone), ref = "Y")
+
+HCV_LINKAGE_LINKED_ONLY$Hospital <- relevel(factor(HCV_LINKAGE_LINKED_ONLY$Hospital), ref = "PPMC")
+
+HCV_LINKAGE_LINKED_ONLY$SUD12 <- relevel(factor(HCV_LINKAGE_LINKED_ONLY$SUD12), ref = "N")
+
+HCV_LINKAGE_LINKED_ONLY$Housing_Insec <- relevel(factor(HCV_LINKAGE_LINKED_ONLY$Housing_Insec), ref = "N")
+
+HCV_LINKAGE_LINKED_ONLY$DC_Location <- relevel(factor(HCV_LINKAGE_LINKED_ONLY$DC_Location), ref = "Home")
+
+HCV_LINKAGE_LINKED_ONLY$Race_Ethnicity <- relevel(factor(HCV_LINKAGE_LINKED_ONLY$Race_Ethnicity), ref = "NHW")
+
+#Cleaning PCP categories 
+HCV_LINKAGE_LINKED_ONLY %>%
+  mutate(
+    PCP = case_when(
+      PCP %in% c("Y", "y") ~ "Y",
+      PCP %in% c("N", "n") ~ "N",
+      TRUE ~ PCP
+    )
+  ) %>%
+  count(PCP) %>%
+  mutate(Percent = round(n / sum(n) * 100, 1))
+
+#Cleaning Phone categories 
+HCV_LINKAGE_LINKED_ONLY %>%
+  mutate(
+    Phone = case_when(
+      Phone %in% c("Y", "y") ~ "Y",
+      Phone %in% c("N", "n") ~ "N",
+      TRUE ~ PCP
+    )
+  ) %>%
+  count(Phone) %>%
+  mutate(Percent = round(n / sum(n) * 100, 1))
+
+#Visualizing associations between factors of interest and care engagement
+
+#Engaged status by age
+ggplot(HCV_LINKAGE_LINKED_ONLY, aes(x = `Engaged (Y/N)`, y = Age)) +
+  geom_boxplot(fill = "aquamarine") +
+  labs(
+    title = "Age by Engagement Status",
+    x = "Engaged (Y/N)",
+    y = "Age"
+  ) +
+  theme_minimal()
+
+#Engaged by gender
+ggplot(HCV_LINKAGE_LINKED_ONLY, 
+       aes(x = Gender, fill = `Engaged (Y/N)`)) +
+  geom_bar(position = "dodge") +
+  labs(
+    title = "Engagement by Gender",
+    x = "Gender",
+    y = "Count",
+    fill = "Engaged"
+  ) +
+  theme_minimal()
+
+#Engagement by Race/Ethnicity
+ggplot(HCV_LINKAGE_LINKED_ONLY, 
+       aes(x = Race_Ethnicity, fill = `Engaged (Y/N)`)) +
+  geom_bar(position = "dodge") +
+  labs(
+    title = "Engagement by Race/Ethnicity",
+    x = "Race_Ethnicity",
+    y = "Count",
+    fill = "Engaged"
+  ) +
+  theme_minimal()
+
+#Re-code Race_Ethnicity variable to for one combined "other" category due to small numbers in Asian and Hispanic group. 
+HCV_LINKAGE_LINKED_ONLY <- HCV_LINKAGE_LINKED_ONLY %>%
+  mutate(Race_Ethnicity = case_when(
+    Race_Ethnicity %in% c("Asian", "Hispanic", "Other/Unknown") ~ "Other",
+    TRUE ~ Race_Ethnicity
+  ))
+
+#Engagement by Race/Ethnicity
+ggplot(HCV_LINKAGE_LINKED_ONLY, 
+       aes(x = Race_Ethnicity, fill = `Engaged (Y/N)`)) +
+  geom_bar(position = "dodge") +
+  labs(
+    title = "Engagement by Race/Ethnicity",
+    x = "Race_Ethnicity",
+    y = "Count",
+    fill = "Engaged"
+  ) +
+  theme_minimal()
+
+
+#Engaged by LOS
+ggplot(HCV_LINKAGE_LINKED_ONLY, aes(x = `Engaged (Y/N)`, y = LOS)) +
+  geom_boxplot(fill = "orange") +
+  labs(
+    title = "LOS by Engagement Status",
+    x = "Engaged (Y/N)",
+    y = "LOS"
+  ) +
+  theme_minimal()
+
+#Engaged by SUD12
+ggplot(HCV_LINKAGE_LINKED_ONLY, 
+       aes(x = SUD12, fill = `Engaged (Y/N)`)) +
+  geom_bar(position = "dodge") +
+  labs(
+    title = "Engagement by Active Substane Use Disorder",
+    x = "SUD12",
+    y = "Count",
+    fill = "Engaged"
+  ) +
+  theme_minimal()
+
+#Engaged by Housing Insecurity
+ggplot(HCV_LINKAGE_LINKED_ONLY, 
+       aes(x = Housing_Insec, fill = `Engaged (Y/N)`)) +
+  geom_bar(position = "dodge") +
+  labs(
+    title = "Engagement by Housing Insecruity",
+    x = "Housing_Insec",
+    y = "Count",
+    fill = "Engaged"
+  ) +
+  theme_minimal()
+
+#Engaged by Location of Discharge
+ggplot(HCV_LINKAGE_LINKED_ONLY, 
+       aes(x = DC_Location, fill = `Engaged (Y/N)`)) +
+  geom_bar(position = "dodge") +
+  labs(
+    title = "Engagement by Discharge Location",
+    x = "DC_Location",
+    y = "Count",
+    fill = "Engaged"
+  ) +
+  theme_minimal()
+
+#Considering co-occurring/collinear processes: among people linked, how common does SUD12 and Housing Insecurity co-occur?
+ggplot(HCV_LINKAGE_LINKED_ONLY, 
+       aes(x = Housing_Insec, fill = SUD12)) +
+  geom_bar(position = "dodge") +
+  labs(
+    title = "Housing Insecurity by Active Substance Use Disorder",
+    x = "Housing_Insec",
+    y = "Count",
+    fill = "SUD12"
+  ) +
+  theme_minimal()
+
+
+
+```
+
+2.  Fitting univariate logistic regression models
+
+```{r}
+
+#Work on the linked-only dataset
+df <- HCV_LINKAGE_LINKED_ONLY
+
+# Make sure outcome is Engaged (Y/N/) with "N" as reference --> OR >1 are factors associated with successful care engagement while OR < 1 are factors associated with unsuccessful care engagement. 
+df <- df %>%
+  mutate(`Engaged (Y/N)` = factor(`Engaged (Y/N)`, levels = c("N", "Y")))
+
+# Defining covariate variable names of interest
+cont_vars <- c("Age", "LOS")
+cat_vars  <- c("Race_Ethnicity", "Hospital", "Insurance", "DC_Location")
+bin_vars  <- c("Gender", "SUD12", "Phone", "PCP", "Housing_Insec")
+
+# Code all categorical/binary predictors are factors
+df <- df %>%
+  mutate(across(all_of(c(cat_vars, bin_vars)), factor))
+
+# All exposures in one vector
+exposures <- c(cont_vars, cat_vars, bin_vars)
+
+# Code was not running with only uni_models <- map(...  Fixed with using "purrr::map" in place of map.  REMINDER: re-run library code if there are errors.
+uni_models <- purrr::map(
+  exposures,
+  ~ {
+    this_formula <- as.formula(paste0("`Engaged (Y/N)` ~ ", .x))
+    glm(
+      formula = this_formula,
+      data    = df,
+      family  = stats::binomial()
+    )
+  }
+)
+
+names(uni_models) <- exposures
+
+# Presenting data in more interpretable format with ORs and 95% CIs.
+uni_results <- purrr::map2_dfr(
+  uni_models,
+  exposures,
+  ~ broom::tidy(.x) %>%
+      dplyr::filter(term != "(Intercept)") %>%
+      dplyr::mutate(
+        exposure = .y,
+        OR       = exp(estimate),
+        CI_low   = exp(estimate - 1.96 * std.error),
+        CI_high  = exp(estimate + 1.96 * std.error)
+      )
+)
+
+uni_results
+
+```
+
+```{r}
+library(dplyr)
+library(stringr) 
+
+exposure_labels <- c(
+  Age           = "Age (years)",
+  LOS           = "Length of stay (days)",
+  Race_Ethnicity = "Race/ethnicity",
+  Hospital      = "Hospital",
+  Insurance     = "Insurance",
+  DC_Location   = "Discharge location",
+  Gender        = "Gender",
+  SUD12         = "Substance use disorder (12 mo)",
+  Phone         = "Has phone",
+  PCP           = "Has primary care provider",
+  Housing_Insec = "Housing insecurity"
+)
+
+pub_table <- uni_results %>%
+  mutate(
+    exposure = factor(exposure, levels = unique(exposure)),
+    
+    level = case_when(
+      term == exposure ~ "Per unit increase",
+      TRUE             ~ str_remove(term, paste0("^", exposure))
+    ),
+    level = str_replace_all(level, "_", " "),
+    
+    OR_round  = round(OR, 2),
+    CI_low_r  = round(CI_low, 2),
+    CI_high_r = round(CI_high, 2),
+    `OR (95% CI)` = sprintf("%.2f (%.2f, %.2f)", OR_round, CI_low_r, CI_high_r),
+    
+    `p-value` = ifelse(p.value < 0.001, "<0.001", sprintf("%.3f", p.value)),
+    
+    
+    Exposure = dplyr::recode(as.character(exposure), !!!exposure_labels)
+  ) %>%
+  arrange(exposure, term) %>%
+  dplyr::select(
+    Exposure,
+    Level = level,
+    `OR (95% CI)`,
+    `p-value`
+  )
+
+pub_table
+
+```
+
+3.  Creating Forest plot to visualize univariate associations between variable of interest and outcome, HCV care engagement.
+
+```{r}
+
+#Forest Plot
+
+forest_data <- uni_results %>%
+  # Drop “Asian” from Race_Ethnicity - this code was entered earlier prior to collapsing of "Asian", "Hispanic", and "Other/Unknown" into a collective category "Other".  Not removing this line of code because if breaks chunk if not included.  
+  filter(!(exposure == "Race_Ethnicity" & str_detect(term, "Asian"))) %>%
+  
+  mutate(
+    level = case_when(
+      term == exposure ~ "Per unit increase",        
+      TRUE ~ str_remove(term, paste0("^", exposure))
+    ),
+    level = str_replace_all(level, "_", " "),
+    group = str_replace_all(exposure, "_", " "),
+    label = level
+  )
+
+```
+
+```{r}
+forest_data <- forest_data %>%
+  mutate(
+    group = factor(group, levels = unique(group)),
+    label = factor(label, 
+                   levels = rev(unique(label)))   
+  )
+
+```
+
+```{r}
+library(ggplot2)
+
+ggplot(forest_data, aes(x = label, y = OR)) +
+  geom_point(size = 3, color = "darkred") +
+  geom_errorbar(aes(ymin = CI_low, ymax = CI_high), width = 0.15) +
+  geom_hline(yintercept = 1, linetype = "dashed", color = "gray40") +
+  scale_y_log10() +
+  coord_flip() +
+  facet_grid(group ~ ., scales = "free_y", space = "free_y") +
+  labs(
+    title = "Forest Plot of Odds Ratios of HCV Care Engagement",
+    x = "",
+    y = "Odds Ratio (95% CI)"
+  ) +
+  theme_minimal(base_size = 12) +
+  theme(
+    strip.text.y = element_text(angle = 0, hjust = 0, face = "bold"),
+    panel.spacing.y = unit(1.2, "lines")
+  )
+
+ggsave("forest_plot.pdf", width = 8, height = 10, units = "in")
+
+```
+
+## Multivariable Logistic Regression
+
+Creating a full and parsimonious model of associations between factors and successful HCV care engagement
+
+```{r}
+#Creating Multivariable model
+
+library(dplyr)  #code breaks without reloading dplyr 
+
+df <- HCV_LINKAGE_LINKED_ONLY %>%
+  mutate(
+    `Engaged (Y/N)` = factor(`Engaged (Y/N)`, levels = c("N", "Y")),
+    across(
+      c(Race_Ethnicity, Hospital, Insurance, DC_Location,
+        Gender, SUD12, Phone, PCP, Housing_Insec),
+      factor
+    )
+)
+
+#Fitting the model with variables of interest
+cont_vars <- c("Age", "LOS")
+cat_vars  <- c("Race_Ethnicity", "Hospital", "Insurance", "DC_Location")
+bin_vars  <- c("Gender", "SUD12", "Phone", "PCP", "Housing_Insec")
+
+exposures <- c(cont_vars, cat_vars, bin_vars)
+
+#Building full model 
+mv_formula <- as.formula(
+  paste("`Engaged (Y/N)` ~", paste(exposures, collapse = " + "))
+)
+mv_mod <- glm(mv_formula, data = df, family = binomial)
+summary(mv_mod)
+
+#Table output as interpretable odds ratios 
+library(broom)
+
+mv_results <- tidy(mv_mod, conf.int = TRUE, exponentiate = TRUE) %>%
+  filter(term != "(Intercept)") %>%
+  mutate(
+    OR       = estimate,
+    CI_low   = conf.low,
+    CI_high  = conf.high
+  ) %>%
+  dplyr::select(term, OR, CI_low, CI_high, p.value)
+
+mv_results #boom
+
+```
+
+```{r}
+#Evaluating collinearity visually as heatmap
+
+#Selecting variables of interest
+vars_for_model <- c(
+  "Age", "LOS",
+  "Race_Ethnicity", "Hospital", "Insurance", "DC_Location",
+  "Gender", "SUD12", "Phone", "PCP", "Housing_Insec"
+)
+
+#Building design matrix with dummy variables for factors
+X <- model.matrix(
+  as.formula(
+    paste("~", paste(vars_for_model, collapse = " + "))
+  ),
+  data = HCV_LINKAGE_LINKED_ONLY
+)
+
+#Dropping intercept column
+X <- X[, -1, drop = FALSE]
+
+#Computing correlation matrix
+cor_mat <- cor(X, use = "pairwise.complete.obs")
+
+#Plotting correlation heatmap
+corrplot(
+  cor_mat,
+  method = "color",
+  type = "upper",
+  order = "hclust",
+  tl.cex = 0.6,        # this changes text size for variable label name
+  number.cex = 0.4,   # this changes text size for correlation coefficient
+  addCoef.col = "black"
+)
+
+
+```
+
+```{r}
+#Creating most parsimonious logistic regression model
+mv_mod_full <- glm(mv_formula, data = df, family = binomial)
+
+library(car) #assess for collinearity 
+vif(mv_mod_full) #VIF <3 generally not a concern; VIF >5 should consider collinearity 
+
+library(MASS)
+library(dplyr) #reloading library to prevent chunk malfunction
+
+#Generating multivariate model in stepwise manner, using both forward and backward selection. Code will calculate AIC for each model to maximize lowest AIC for a model.  Using statistical selection over a priori selection of variables as full model includes all variables plausibly associated with outcome of interest.  Future work: LASSO selection over AIC     
+mv_mod_step <- stepAIC(mv_mod_full, direction = "both", trace = FALSE)
+summary(mv_mod_step)
+
+anova(mv_mod_full, mv_mod_step, test = "Chisq")
+
+#hosmer lemeshow GOF test
+library(ResourceSelection)
+df$Engaged_num <- ifelse(df$`Engaged (Y/N)` == "Y", 1, 0)
+
+
+hoslem.test(df$Engaged_num, fitted(mv_mod_step), g = 10) #a Hosmer–Lemeshow test that is non-significant (p>0.05) indicates model fits the observed data well.
+
+#Creating AUROC 
+library(pROC)
+roc_obj <- roc(df$Engaged_num, fitted(mv_mod_step)) #most parsimonious model
+auc(roc_obj)
+plot(roc_obj)
+
+library(broom)
+library(dplyr) #RStudio continues to forget this is loaded
+
+#Generate table of odds ratios for both full model (mv_mod_full_reduced) and parsimonious model (mv_mod_step)
+mv_results <- tidy(mv_mod_full, conf.int = TRUE, exponentiate = TRUE) %>%
+  filter(term != "(Intercept)") %>%
+  mutate(
+    OR      = round(estimate, 2),
+    CI_low  = round(conf.low, 2),
+    CI_high = round(conf.high, 2),
+    `OR (95% CI)` = sprintf("%.2f (%.2f, %.2f)", OR, CI_low, CI_high),
+    `p-value` = ifelse(p.value < 0.001, "<0.001", sprintf("%.3f", p.value))
+  ) %>%
+  dplyr::select(                     #calling out dplyr::select needed to excecute code
+    term,
+    `OR (95% CI)`,
+    `p-value`
+  )
+
+mv_results
+
+mv_results2 <- tidy(mv_mod_step, conf.int = TRUE, exponentiate = TRUE) %>%
+  filter(term != "(Intercept)") %>%
+  mutate(
+    OR      = round(estimate, 2),
+    CI_low  = round(conf.low, 2),
+    CI_high = round(conf.high, 2),
+    `OR (95% CI)` = sprintf("%.2f (%.2f, %.2f)", OR, CI_low, CI_high),
+    `p-value` = ifelse(p.value < 0.001, "<0.001", sprintf("%.3f", p.value))
+  ) %>%
+  dplyr::select(                     #calling out dplyr::select needed to excecute code
+    term,
+    `OR (95% CI)`,
+    `p-value`
+  )
+
+mv_results2
+
+```
+
+## SUMMARY OF RESULTS
+
+During the first 18 months of this default inpatient HCV screening and linkage program, 39,799 unique patients completed HCV screening. Of the 1,241 (3.1%) with a reactive HCV antibody, representing prior or current infection, 330 patients had detectable viremia. Overall, patients with HCV viremia were predominately male (69%), non-Hispanic white (53%), with median age of 56 years (interquartile range \[IQR\]: 40, 67\]). The majority of patients with HCV viremia were insured by Medicaid only (50%) or Medicare only (18%), with few insured by commercial/other plans (10%) or uninsured at time of index hospitalization (8,5%).
+
+The majority of patients with HCV viremia were identified at the Center City hospitals, including 34.2% at PPMC, 31.5% at HUP, and 12.2% at PAH. Of note, while PPMC was the hospital with the largest proportion of patients identified with HCV viremia, it represents only 12.2% of the total bed volume across all hospitals included. Median length of stay for the index hospitalization was 5 days (IQR: 3, 10) days. Most patients were discharged to home (51%); however, 24% were discharged to a different facility and 15% had a patient-directed discharge. Recorded substance use in the prior 12 months was identified in 57% of patients. No primary care provider was identified for 48% of patients. Housing instability was reported in 46% of patients while 16% of patients had no phone number to provide for the medical record.
+
+*Geographic distribution of HCV viremia by zip code*
+
+Overall, the greatest density of patient count plotted by zip code is centered around the regions of the hospitals included in the analysis. There remain outliers beyond the Center City, Chester County, and Princeton hospital centers, likely reflective patients being referred into care to the quaternary care available within Penn Medicine hospitals. Of note 15% of the zip codes recorded for patients were for the medical center’s address or Prevention Point address, a comprehensive care center for people who inject drugs. Moreover, patients reporting housing instability may have recorded an address for a family member, thus zip codes in this cohort may not be reflective of patient residence.
+
+*Care Cascade for HCV Viremic Patients Appropriate for Linkage to Care*
+
+Of the 330 patients with HCV viremia, 29 died during the index hospitalization or had a terminal illness and were thus not clinically appropriate for linkage to HCV care. The remaining 301 were included in the HCV care cascade. Of the 301 patients identified with HCV viremia during the index hospitalization, 77% were linked to an HCV treating provider. Patients not linked to care were all considered lost to care. Among the patients lost to care prior to linkage, 47% had a patient-directed discharge at the time of the index hospitalization.
+
+Of the 233 patients linked to care, 121 (52%) attended at least one visit with an HCV-treating provider and were considered engaged in care. One hundred sixteen (96%) of patients who attended at least one visit started HCV treatment. Among those who started HCV treatment, 49 (42%) had documentation of HCV cure, defined as a negative HCV viral load assessed at least 12 weeks after completion of HCV treatment.
+
+*Descriptive Time-to-Event for HCV Care*
+
+Dates of linkage appointment and HCV treatment initiation were missing or erroneously transcribed in 9 and 30 patients, respectively. Among the 224 patients with recorded linkage appointment date, median time from index hospital admission to first linkage appointment with an HCV treating provider was 29 days (IQR: 17, 47). Among the 86 patients with a documented treatment dispensation date, the median time from index hospitalization to HCV treatment dispensation was 64 days (IQR: 43, 131). Among the 53 patients who returned to care for HCV cure assessment, 49 (92%) achieved cure. Median time from HCV treatment initiation to confirmation of cure was 179 days (IQR: 167, 233), reflective of relatively timely follow-up for cure assessment at least 12 weeks after completed an 8-12 week course of HCV treatment.
+
+*Factors Associated with Care Engagement*
+
+Among the 301 patients clinically appropriate for HCV care engagement, 121 ultimately engaged in care. To identify factors associated with the binary outcome of care engagement, univariable logistic regression models fit for all baseline characteristics of interest. Two factors were significantly positively associated with care engagement. Increasing age was significantly associated with care engagement (OR: 1.03 \[95% CI: 1.01, 1.05\]). Patients with other insurance were associated with 2.72-fold increased odds (95% CI: 1.11, 6.64) of care engagement, relative to patients with Medicaid. Four factors were statistically negatively associated with care engagement: active substance use (OR: 0.20 \[95% CI: 0.11, 0.35\]), not having a phone (0.24 \[95% CI: 0.09, 0.62\]), not having a primary care provider (OR: 0.36 \[0.21, 0.62\]), and having housing insecurity (OR: 0.28 \[95% CI: 0.16, 0.48\]).
+
+As the negatively associated factors with care engagement can co-occur in patient populations, collinearity was explored for all factors using a correlation coefficient heat map. Positive correlation was identified between active substance use and housing instability (correlation coefficient: 0.6) and between housing instability and not having a primary care provider (correlation coefficient: 0.4). A positive correlation was additionally observed between increasing age and Medicare only insurance (correlation coefficient: 0.45). A negative correlation was observed between active substance use and increasing age (correlation coefficient: -0.53).
+
+To identify independent associations between baseline factors and care engagement, a multivariable logistic regression model was fit with all baseline factors of interest. Collinearity was further evaluated by calculating variance inflation factors (VIF). As no factor had a VIF \>3.5, all factors were retained in the full model. The full model was used as a starting point for step-wise selection of variables to identify a parsimonious model. Both backwards and forward selection of variables was used to identify the most parsimonious model with the lowest AIC, identified as 286.67 for the logistic regression model including Insurance + active substance use + housing insecurity. The Hosmer-Lemeshow test was not significant (p=0.517), thus the parsimonious model fit the data as well as the full model.
+
+In the final, parsimonious logistic regression model, the strongest factor negatively associated with care engagement was active substance use (OR: 0.22 \[95% CI: 0.09, 0.50\]; p\<0.001). No factors in the final model were significantly positively associated with care engagement. The area under the receiving operator curve was 0.786, demonstrating moderate fit.
+
+## DISCUSSION
+
+In this cohort of 330 patients identified with HCV viremia during hospitalization between October 2023 and April 2025, 301 were clinically appropriate for HCV care, of whom 77% were linked to an HCV-treating provider. This high percentage of linkage exceeds that of previous reports from outpatient setting, largely reflective of the captive nature of the audience.(5) Given the median length of stay was five days, this provided the Hepatitis Linkage Team the time needed to contact the patient even prior to hospital discharge to link to care. However, only 52% of patients linked to care attended at least one visit during the study period, drawing attention to the most important gap for patient care and public health. This gap may reflect the challenges with care transitions from hospital discharge to outpatient HCV care engagement. Indeed, the strongest factor independently associated with failure to engage in care was reported active substance use, highlighting an ongoing need to offer co-located care for both HCV and substance use disorder treatment.
+
+While care engagement can be improved with improved outreach and engagement, this inpatient HCV program demonstrated an impressive ability to facilitate treatment initiation once patients were engaged in care. Ninety six percent of patients engaged in HCV care started treatment. While all oral antivirals for HCV treatment have been available since 2014, these patients treated as part of an inpatient screening and linkage program suggest many patients still cannot access HCV treatment through traditional models of care. Inpatient HCV screening and linkage programs can offer a strategy to capture patients through opportunistic screening, while ensuring infrastructure exists to link patients with viremia to life-saving treatment.
+
+Timely access to HCV treatment was additionally demonstrated by this program with patients initiating treatment with a median time of 64 days. This is a stark contrast to recent analysis of a nationally representative cohort of insured individuals in which \<30% of patients initiated HCV treatment within one year of diagnosis.(9) These data suggest inpatient HCV screening and linkage teams can additionally expedite time to treatment initiation.
+
+While only 42% of patients treated for HCV returned to care for assessment of cure, this is only slightly lower that the loss to care observed in outpatient cohorts: only 67% of patients with HCV treated in the Veterans Health Administration have completed HCV cure assessment.(10) The lower percentage of patients returning as part of the inpatient program may reflect a population with increased medical complexity and multimorbidity that ultimately hinders ease of subsequent care engagement.
+
+In conclusion, this is the first work evaluating HCV linkage to care among hospitalized patients. It is challenging to directly compare care cascades for ambulatory settings as the patient populations are arguably much different with hospitalized patients having a higher acuity of illness, multiple care transitions to navigate, polypharmacy, and competing medical priorities following hospital discharge. Despite this enrichment of medical complexity, our Penn Medicine HCV Screening and Linkage program achieves a high rate of linkage and treatment initiation for patients ultimately engaged in care, on par or exceeding that reported from community and ambulatory medical settings. Findings from these analyses can inform refinement of navigation strategies to engage patients with factors associated with lower odds of care engagement, including active substance use disorder. Other health systems can consider application of our framework to improve diagnosis and treatment of people with HCV in their community.
+
+## REFERENCES
+
+1.  Kim HS, Yang JD, El-Serag HB, Kanwal F. Awareness of chronic viral hepatitis in the United States: An update from the National Health and Nutrition Examination Survey. J Viral Hepat. 2019;26(5):596-602.
+2.  Owens DK, Davidson KW, Krist AH, Barry MJ, Cabana M, Caughey AB, et al. Screening for Hepatitis C Virus Infection in Adolescents and Adults: US Preventive Services Task Force Recommendation Statement. Jama. 2020;323(10):970-5.
+3.  Schillie S, Wester C, Osborne M, Wesolowski L, Ryerson AB. CDC Recommendations for Hepatitis C Screening Among Adults - United States, 2020. MMWR Recomm Rep. 2020;69(2):1-17.
+4.  Lo Re V, 3rd, Bhattacharya D, Price JC, Aronsohn A, Kim HN, Falade-Nwulia O, et al. State-of-the-Art Review: Hepatitis C. Clin Infect Dis. 2025;81(2):e15-e26.
+5.  Yehia BR, Schranz AJ, Umscheid CA, Lo Re V, 3rd. The treatment cascade for chronic hepatitis C virus infection in the United States: a systematic review and meta-analysis. PLoS One. 2014;9(7):e101554.
+6.  Mehta SJ, Torgersen J, Small DS, Mallozzi CP, McGreevey JD, 3rd, Rareshide CAL, et al. Effect of a Default Order vs an Alert in the Electronic Health Record on Hepatitis C Virus Screening Among Hospitalized Patients: A Stepped-Wedge Randomized Clinical Trial. JAMA Netw Open. 2022;5(3):e222427.
+7.  Harris PA, Taylor R, Minor BL, Elliott V, Fernandez M, O'Neal L, et al. The REDCap consortium: Building an international community of software platform partners. J Biomed Inform. 2019;95:103208.
+8.  Harris PA, Taylor R, Thielke R, Payne J, Gonzalez N, Conde JG. Research electronic data capture (REDCap)--a metadata-driven methodology and workflow process for providing translational research informatics support. J Biomed Inform. 2009;42(2):377-81.
+9.  Thompson WW, Symum H, Sandul A, Gupta N, Patel P, Nelson N, et al. Vital Signs: Hepatitis C Treatment Among Insured Adults - United States, 2019-2020. MMWR Morb Mortal Wkly Rep. 2022;71(32):1011-7.
+10. Torgersen J, Newcomb CW, Carbonari DM, Rentsch CT, Park LS, Mezochow A, et al. Protease inhibitor-based direct-acting antivirals are associated with increased risk of aminotransferase elevations but not hepatic dysfunction or decompensation. J Hepatol. 2021;75(6):1312-22.
