@@ -1,4 +1,4 @@
-# BMIN5030 Final Project - Exploring Association between Early Antibiotic Administration and Improved Outcomes in Sepsis Treatment: A MIMIC-IV Analysis
+# Exploring Association between Early Antibiotic Administration and Improved Outcomes in Sepsis Treatment: A MIMIC-IV Analysis
 
 ## Key Files:
 * `Association between TTA and Improved Outcomes.qmd`: The main R notebook for analysis.
