@@ -2,6 +2,10 @@
 .Rhistory
 .RData
 .Ruserdata
+<<<<<<< HEAD
 .httr-oauth
 .DS_Store
 .quarto
+=======
+BMIN503_Final_Project.Rproj
+>>>>>>> b89dd055e9c286ffb5961d8ffa3ffb7a43ac2d25

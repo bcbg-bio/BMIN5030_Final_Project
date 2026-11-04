@@ -1,0 +1,36 @@
+---
+title: "Identifying Lifestyle and Environmental Risk Factors that Best Predict the Development of Alzheimer's Disease"
+subtitle: "BMIN5030 Final Project"
+author: "Nathaly Perez Rojas"
+format: html
+editor: visual
+number-sections: true
+embed-resources: true
+---
+
+------------------------------------------------------------------------
+
+Use this template to complete your project throughout the course. Your Final Project presentation will be based on the contents of this document. Replace the title/name above and text below with your own, but keep the headers. Feel free to change the theme and other display settings, although this is not required.
+
+## Overview {#sec-overview}
+
+The goals of this project are twofold. First, the project intends to identify the lifestyle and environmental risk factors associated with Alzheimer's Disease (AD). Second, the project intends to identify which of these lifestyle and environmental risk factors best predict the development of AD beyond genetic and family history risk. To meet these goals, I will use the National Alzheimer's Coordinating Center's main dataset, in addition to supplemental PET scan data. I met with Dr. Adam Naj who shared several sources of data I could request online and I spoke with Dr. Christos Davatzikos who pointed me to several of his papers on machine learning modeling in the AD literature. Here is the link to my [final project GitHub repository](https://github.com/npr829/BMIN5030_Final_Project).
+
+## Introduction {#sec-introduction}
+In current literature, there is a known association between genetic and family history risk with Alzheimer’s Disease (AD) based on previous studies that have examined these associations via various predictive modeling approaches and observational studies. However, less is known on the association between modifiable risk factors such as lifestyle or environmental factors and the development of AD. Previously, the Lancet published 14 modifiable risk factors with AD and dementia, which included lifestyle factors (e.g., diet, sleep, etc.) and environmental factors (e.g., air pollution). Although, these associations were identified primarily by observational studies. In this study, I propose to use supervised machine learning approaches, specifically, gradient boosted forest trees to create a model that predicts the development of Alzheimer’s Disease (AD) using lifestyle and environmental risk factors. In addition to creating the model, I will identify risk factors that best predict the development of AD beyond genetic and family history risk based on the results of the supervised machine learning.
+
+Describe the problem addressed, its significance, and some background to motivate the problem. This should extend what is in the @sec-overview.
+
+Explain why your problem is interdisciplinary, what fields can contribute to its understanding, and incorporate background related to what you learned from meeting with faculty/staff.
+
+## Methods {#sec-methods}
+
+Describe the data used and general methodological approach used to address the problem described in the @sec-introduction. Subsequently, incorporate full R code necessary to retrieve and clean data, and perform analysis. Be sure to include a description of code so that others (including your future self) can understand what you are doing and why.
+
+## Results {#sec-results}
+
+Describe your results and include relevant tables, plots, and code/comments used to obtain them. You may refer to the @sec-methods as needed. End with a brief conclusion of your findings related to the question you set out to address. You can include references if you'd like, but this is not required.
+
+## Conclusion
+
+This the conclusion. The @sec-results can be invoked here.
