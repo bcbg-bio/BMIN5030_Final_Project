@@ -18,9 +18,9 @@ Give a brief a description of your project and its goal(s), what data you are us
 
 ## Introduction {#sec-introduction}
 
-Describe the problem addressed, its significance, and some background to motivate the problem. This should extend what is in the @sec-overview.
+The overall goal of the project is to understand expand on the developing research on endometriosis, specifically within women’s reproductive health and quality of life.  Endometriosis, along with other endocrine, reproductive and gynecological disorders/conditions, have shown to impact women’s overall health and quality of life.  As growing research and evidence identifying a range of factors that impact the development of endometriosis, this project aims to explore the existing data to develop and propose further research opportunities.
 
-Explain why your problem is interdisciplinary, what fields can contribute to its understanding, and incorporate background related to what you learned from meeting with faculty/staff.
+Endometriosis is a complex and interdisciplinary disease. Although the literature states that the condition that begins within the lining of the uterus has been shown to spread to other areas of the body. This not only increases the risk of additional health conditions impacted by the spread of endometriosis, but it also makes it challenging to treat and removal. Endometriosis’ complexity and ability to spread, involves multiple medical expertise from multiple fields to address and treat the complex condition.
 
 ## Methods {#sec-methods}
 
