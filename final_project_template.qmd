@@ -16,15 +16,107 @@ Use this template to complete your project throughout the course. Your Final Pro
 
 Give a brief a description of your project and its goal(s), what data you are using to complete it, and what two faculty/staff in different fields you have spoken to about your project with a brief summary of what you learned from each person. Include a link to your final project GitHub repository.
 
+The goal of my final project is to develop and evaluate predictive models for recovery from peripartum cardiomyopathy (PPCM). Using an EHR dataset from individuals diagnosed with PPCM, I hope to assess the variables most predictive of recovery and create and train models that can predict recovery for future cases using logistical regression and supervised machine learning techniques. After speaking with Dr. Arany and Dr. Yang, I gained access to a more complete dataset for PPCM than what I had originally planned to use, discussed what kind of questions may be most interesting to look at with this dataset, and we agreed that prediction models of recovery from ppcm would be novel and interesting to try to create and assess.
+
 ## Introduction {#sec-introduction}
 
 Describe the problem addressed, its significance, and some background to motivate the problem. This should extend what is in the @sec-overview.
 
 Explain why your problem is interdisciplinary, what fields can contribute to its understanding, and incorporate background related to what you learned from meeting with faculty/staff.
 
+Peripartum cardiomyopathy (PPCM) affects approximately 1:1000 live births worldwide, is a significant cause of morbidity, and is in many places the leading cause of maternal peripartum mortality. To meet the diagnosis of PPCM, patients must have heart failure developing in the last month of pregnancy or within the months following delivery, left ventricular ejection fraction on echocardiogram below 45% and no other clinical reasoning behind the heart failure. The mechanism of PPCM is still being determined by researchers and clinicians. Retrospective studies have shown that 50-70% of patients with PPCM will recover (Jackson et. al 2024, Lewey et. al 2021). Studies investigating and developing prediction scores for PPCM have relied upon logistic regression methods (Jackson et. al 2024, Prameswari et. al 2024), but have not explored machine learning techniques. The goal of this project is to create and assess the efficacy of machine learning-based prediction models for recovery from PPCM, and compare to logistic regression methods.
+
+This is an interdisciplinary question because it combines evaluation and comparison of data science techniques with understanding clinical data with real-world health implications. This could be useful for both assessing the utility of different predictive methods and for understanding what variables are important for treating and monitoring PPCM.
+
 ## Methods {#sec-methods}
 
 Describe the data used and general methodological approach used to address the problem described in the @sec-introduction. Subsequently, incorporate full R code necessary to retrieve and clean data, and perform analysis. Be sure to include a description of code so that others (including your future self) can understand what you are doing and why.
+
+Methods plan:
+
+Overall: create and evaluate prediction models of recovery from PPCM using logistic regression, random forest, and xgboost models from a dataset of 220 PPCM patients.
+
+1.  Clean the data (selecting columns with relevant predictor variables from a de-identified dataset)
+2.  Create a recipe to standardize and normalize variables (ie. turning categorical variables to 0/1)
+3.  Use glmnet, xgboost, and randomForest packages to create and optimize prediction models using cross-fold validation
+4.  Evaluate the models on independent dataset
+
+```{r}
+library(tidyverse)
+```
+
+```{r}
+#loading data
+ppcm_data <- read_csv(
+  "C:/Users/jsimm/Dropbox/BMIN 5030/Final Project/FinalPPCMData Deidentified.csv",
+  locale = locale(encoding = "Windows-1252"),
+  show_col_types = FALSE
+)
+
+ppcm_data
+```
+
+```{r}
+#loading and installing packages
+install.packages("glmnet")
+install.packages("randomForest")
+install.packages("xgboost")
+
+library(tidymodels)
+library(vip)
+```
+
+```{r}
+
+#cleaning_data
+#removing patient's whose outcome was unknown
+ppcm_data_known_outcome = ppcm_data |> drop_na("64. endpoint")
+
+#selecting predictor columns
+ppcm_model_data = ppcm_data_known_outcome |> select("31. age_at_dx", "35. deliverytype", "39. diagduring", "45. ef", "43. lvidd","44. lvids", "49. arrhythmia","59. preghyper", "61. chronhyper", "51. documentation_of_EF >55%" )
+
+#renaming columns
+ppcm_model_data = ppcm_model_data |> rename(Age_at_Diagnosis = `31. age_at_dx`,
+                                            Type_of_Delivery = `35. deliverytype`,
+                                            Period_Diagnosed = `39. diagduring`,
+                                            EF_at_iagnosis = `45. ef`,
+                                            LVIDD_at_Diagnosis = `43. lvidd`,
+                                            LVIDS_at_Diagnosis = `44. lvids`,
+                                            Arrhythmia_Present = `49. arrhythmia`,
+                                            Pregnancy_Related_Hypertension = `59. preghyper`,
+                                            Previous_Chronic_Hypertension = `61. chronhyper`,
+                                            Recovery_from_PPCM = `51. documentation_of_EF >55%`)
+
+ppcm_model_data = ppcm_model_data |> rename(EF_at_Diagnosis = EF_at_iagnosis)
+
+
+#coding 999 as unknown for arrhythmia column
+
+final_ppcm_model_data = ppcm_model_data |> mutate(Arrhythmia_Present = na_if(Arrhythmia_Present, 999))
+
+final_ppcm_model_data
+```
+
+```{r}
+#number of patients who did and did not recover
+
+recovery_count = final_ppcm_model_data |> count(Recovery_from_PPCM)
+recovery_count
+```
+
+```{r}
+#creating folds
+
+ppcm_data_folds <- vfold_cv(final_ppcm_model_data, v = 5, strata = Recovery_from_PPCM)
+```
+
+```{r}
+#creating recipe
+
+ppcm_data_recipe <- recipe(Recovery_from_PPCM ~ ., data = final_ppcm_model_data) |>
+  step_dummy(all_nominal_predictors()) |>
+  step_normalize(all_numeric_predictors())
+```
 
 ## Results {#sec-results}
 
